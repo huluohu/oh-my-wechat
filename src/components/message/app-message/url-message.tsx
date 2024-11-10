@@ -97,9 +97,6 @@ export default function UrlMessage({
       className={"border"}
     >
       <h4>{message.msg.appmsg.title}</h4>
-      <div className={"flex"}>
-        <p>{message.msg.appmsg.des}</p>
-      </div>
     </a>
   );
 }

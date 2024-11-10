@@ -6,7 +6,7 @@ interface ViopMessageProps extends MessageProp {
 }
 
 interface ViopMessageEntity {
-  voipmsg: {
+  voipmsg?: {
     "@_type": "VoIPBubbleMsg" | string; // eg. VoIPBubbleMsg
     VoIPBubbleMsg: {
       msg: string; // eg. 通话时长 00:31
@@ -23,6 +23,15 @@ interface ViopMessageEntity {
       business: string;
     };
   };
+  voipinvitemsg?: {
+    roomid: 88320233;
+    key: "7240177537323914205";
+    status: 2;
+    invitetype: 1;
+  };
+  voipextinfo?: {
+    recvtime: 1685271014;
+  };
 }
 
 export default function ViopMessage({
@@ -37,10 +46,20 @@ export default function ViopMessage({
   const messageEntity: ViopMessageEntity = xmlParser.parse(message.Message);
 
   return (
-    <div className="">
-      call:{" "}
-      {messageEntity.voipmsg["@_type"] === "VoIPBubbleMsg" &&
-        messageEntity.voipmsg[messageEntity.voipmsg["@_type"]].msg}
-    </div>
+    <>
+      {messageEntity.voipmsg && (
+        <div className="">
+          call:{" "}
+          {messageEntity.voipmsg["@_type"] === "VoIPBubbleMsg" &&
+            messageEntity.voipmsg[messageEntity.voipmsg["@_type"]].msg}
+        </div>
+      )}
+
+      {messageEntity.voipinvitemsg && (
+        <div className="">
+          <p>通话邀请</p>
+        </div>
+      )}
+    </>
   );
 }

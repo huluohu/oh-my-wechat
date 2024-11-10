@@ -17,6 +17,8 @@ import {
   MessageType,
 } from "@/lib/schema.ts";
 import { cn } from "@/lib/utils.ts";
+import { ErrorBoundary } from "react-error-boundary";
+import { handler } from "tailwindcss-animate";
 
 export interface MessageProp {
   message: DatabaseMessageRow;
@@ -29,230 +31,280 @@ export default function Message({
   direction,
   isChatroom = false,
 }: MessageProp) {
-  try {
-    switch (message.Type) {
-      case MessageType.TEXT:
-        return (
-          <div
-            className={cn(
-              "flex gap-x-2",
-              ["flex-row-reverse", "flex-row"][direction],
-            )}
-          >
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-            <TextMessage
-              message={message}
-              variant={"default"}
-              direction={direction}
-              isChatroom={isChatroom}
-            />
-          </div>
-        );
 
-      case MessageType.IMAGE:
-        return (
-          <div
-            className={cn(
-              "flex gap-x-2",
-              ["flex-row-reverse", "flex-row"][direction],
-            )}
-          >
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-            <ImageMessage
-              message={message}
-              variant={"default"}
-              direction={direction}
-              isChatroom={isChatroom}
-            />
-          </div>
-        );
+  const handleConsoleMessage = (message) => {
+    console.log(message);
+  }
 
-      case MessageType.VOICE:
-        return (
-          <div
-            className={cn(
-              "flex gap-x-2",
-              ["flex-row-reverse", "flex-row"][direction],
-            )}
-          >
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-            <VoiceMessage
-              message={message}
-              variant={"default"}
-              direction={direction}
-              isChatroom={isChatroom}
-            />
-          </div>
-        );
+  return <ErrorBoundary fallback={<div>解析失败的消息</div>}>
+    <MessageComponent
+      message={message}
+      variant={"default"}
+      direction={direction}
+      isChatroom={isChatroom}
+    />
+  </ErrorBoundary>
 
-      case MessageType.CONTACT:
-        return (
-          <div
-            className={cn(
-              "flex gap-x-2",
-              ["flex-row-reverse", "flex-row"][direction],
-            )}
-          >
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-            <ContactMessage
-              message={message}
-              variant={"default"}
-              direction={direction}
-              isChatroom={isChatroom}
-            />
-          </div>
-        );
+}
 
-      case MessageType.VIDEO:
-        return (
-          <div
-            className={cn(
-              "flex gap-x-2",
-              ["flex-row-reverse", "flex-row"][direction],
-            )}
-          >
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-            <VideoMessage
-              message={message}
-              variant={"default"}
-              direction={direction}
-              isChatroom={isChatroom}
-            />
-          </div>
-        );
+function MessageComponent({
+  message,
+  direction,
+  isChatroom = false,
+}: MessageProp) {
+  switch (message.Type) {
+    case MessageType.TEXT:
+      return (
+        <div
+          className={cn(
+            "flex gap-x-2",
+            ["flex-row-reverse", "flex-row"][direction],
+          )}
 
-      case MessageType.MICROVIDEO:
-        return (
-          <div
-            className={cn(
-              "flex gap-x-2",
-              ["flex-row-reverse", "flex-row"][direction],
-            )}
-          >
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-            <MicroVideoMessage
-              message={message}
-              variant={"default"}
-              direction={direction}
-              isChatroom={isChatroom}
-            />
-          </div>
-        );
-
-      case MessageType.STICKER:
-        return (
-          <div
-            className={cn(
-              "flex gap-x-2",
-              ["flex-row-reverse", "flex-row"][direction],
-            )}
-          >
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-            <StickerMessage
-              message={message}
-              variant={"default"}
-              direction={direction}
-              isChatroom={isChatroom}
-            />
-          </div>
-        );
-
-      case MessageType.LOCATION:
-        return (
-          <div
-            className={cn(
-              "flex gap-x-2",
-              ["flex-row-reverse", "flex-row"][direction],
-            )}
-          >
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-            <LocationMessage
-              message={message}
-              variant={"default"}
-              direction={direction}
-              isChatroom={isChatroom}
-            />
-          </div>
-        );
-
-      case MessageType.APP:
-        return (
-          <div
-            className={cn(
-              "flex gap-x-2",
-              ["flex-row-reverse", "flex-row"][direction],
-            )}
-          >
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-            <AppMessage
-              message={message}
-              variant={"default"}
-              direction={direction}
-              isChatroom={isChatroom}
-            />
-          </div>
-        );
-
-      case MessageType.VOIP:
-        return (
-          <div
-            className={cn(
-              "flex gap-x-2",
-              ["flex-row-reverse", "flex-row"][direction],
-            )}
-          >
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-            <VoipMessage
-              message={message}
-              variant={"default"}
-              direction={direction}
-              isChatroom={isChatroom}
-            />
-          </div>
-        );
-
-      case MessageType.GROUP_VOIP:
-        return (
-          <div
-            className={cn(
-              "flex gap-x-2",
-              ["flex-row-reverse", "flex-row"][direction],
-            )}
-          >
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-            <GroupVoipMessage
-              message={message}
-              variant={"default"}
-              direction={direction}
-              isChatroom={isChatroom}
-            />
-          </div>
-        );
-
-      case MessageType.SYSTEM:
-        return (
-          <SystemMessage
+          onDoubleClick={() => {
+            handleConsoleMessage(message);
+          }}
+        >
+          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          <TextMessage
             message={message}
+            variant={"default"}
             direction={direction}
             isChatroom={isChatroom}
           />
-        );
+        </div>
+      );
 
-      case MessageType.SYSTEM_EXTENDED:
-        return (
-          <SystemExtendedMessage
+    case MessageType.IMAGE:
+      return (
+        <div
+          className={cn(
+            "flex gap-x-2",
+            ["flex-row-reverse", "flex-row"][direction],
+          )}
+          onDoubleClick={() => {
+            handleConsoleMessage(message);
+          }}
+        >
+          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          <ImageMessage
             message={message}
+            variant={"default"}
             direction={direction}
             isChatroom={isChatroom}
           />
-        );
+        </div>
+      );
 
-      default:
-        console.error("Unknown message type", message.Type, message);
-        return <div>Unknown message type: {message.Type}</div>;
-    }
-  } catch (e) {
-    console.error(message.Type, message, e);
-    return <div>Failed to parse message</div>;
+    case MessageType.VOICE:
+      return (
+        <div
+          className={cn(
+            "flex gap-x-2",
+            ["flex-row-reverse", "flex-row"][direction],
+          )}
+          onDoubleClick={() => {
+            handleConsoleMessage(message);
+          }}
+        >
+          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          <VoiceMessage
+            message={message}
+            variant={"default"}
+            direction={direction}
+            isChatroom={isChatroom}
+          />
+        </div>
+      );
+
+    case MessageType.CONTACT:
+      return (
+        <div
+          className={cn(
+            "flex gap-x-2",
+            ["flex-row-reverse", "flex-row"][direction],
+          )}
+          onDoubleClick={() => {
+            handleConsoleMessage(message);
+          }}
+        >
+          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          <ContactMessage
+            message={message}
+            variant={"default"}
+            direction={direction}
+            isChatroom={isChatroom}
+          />
+        </div>
+      );
+
+    case MessageType.VIDEO:
+      return (
+        <div
+          className={cn(
+            "flex gap-x-2",
+            ["flex-row-reverse", "flex-row"][direction],
+          )}
+          onDoubleClick={() => {
+            handleConsoleMessage(message);
+          }}
+        >
+          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          <VideoMessage
+            message={message}
+            variant={"default"}
+            direction={direction}
+            isChatroom={isChatroom}
+          />
+        </div>
+      );
+
+    case MessageType.MICROVIDEO:
+      return (
+        <div
+          className={cn(
+            "flex gap-x-2",
+            ["flex-row-reverse", "flex-row"][direction],
+          )}
+          onDoubleClick={() => {
+            handleConsoleMessage(message);
+          }}
+        >
+          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          <MicroVideoMessage
+            message={message}
+            variant={"default"}
+            direction={direction}
+            isChatroom={isChatroom}
+          />
+        </div>
+      );
+
+    case MessageType.STICKER:
+      return (
+        <div
+          className={cn(
+            "flex gap-x-2",
+            ["flex-row-reverse", "flex-row"][direction],
+          )}
+          onDoubleClick={() => {
+            handleConsoleMessage(message);
+          }}
+        >
+          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          <StickerMessage
+            message={message}
+            variant={"default"}
+            direction={direction}
+            isChatroom={isChatroom}
+          />
+        </div>
+      );
+
+    case MessageType.LOCATION:
+      return (
+        <div
+          className={cn(
+            "flex gap-x-2",
+            ["flex-row-reverse", "flex-row"][direction],
+          )}
+          onDoubleClick={() => {
+            handleConsoleMessage(message);
+          }}
+        >
+          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          <LocationMessage
+            message={message}
+            variant={"default"}
+            direction={direction}
+            isChatroom={isChatroom}
+          />
+        </div>
+      );
+
+    case MessageType.APP:
+      return (
+        <div
+          className={cn(
+            "flex gap-x-2",
+            ["flex-row-reverse", "flex-row"][direction],
+          )}
+          onDoubleClick={() => {
+            handleConsoleMessage(message);
+          }}
+        >
+          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          <AppMessage
+            message={message}
+            variant={"default"}
+            direction={direction}
+            isChatroom={isChatroom}
+          />
+        </div>
+      );
+
+    case MessageType.VOIP:
+      return (
+        <div
+          className={cn(
+            "flex gap-x-2",
+            ["flex-row-reverse", "flex-row"][direction],
+          )}
+          onDoubleClick={() => {
+            handleConsoleMessage(message);
+          }}
+        >
+          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          <VoipMessage
+            message={message}
+            variant={"default"}
+            direction={direction}
+            isChatroom={isChatroom}
+          />
+        </div>
+      );
+
+    case MessageType.GROUP_VOIP:
+      return (
+        <div
+          className={cn(
+            "flex gap-x-2",
+            ["flex-row-reverse", "flex-row"][direction],
+          )}
+          onDoubleClick={() => {
+            handleConsoleMessage(message);
+          }}
+        >
+          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          <GroupVoipMessage
+            message={message}
+            variant={"default"}
+            direction={direction}
+            isChatroom={isChatroom}
+          />
+        </div>
+      );
+
+    case MessageType.SYSTEM:
+      return (
+        <SystemMessage
+          message={message}
+          direction={direction}
+          isChatroom={isChatroom}
+        />
+      );
+
+    case MessageType.SYSTEM_EXTENDED:
+      return (
+        <SystemExtendedMessage
+          message={message}
+          direction={direction}
+          isChatroom={isChatroom}
+        />
+      );
+
+    default:
+      console.error("Unknown message type", message.Type, message);
+      return <div>Unknown message type: {message.Type}</div>;
   }
 }

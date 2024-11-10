@@ -10,7 +10,7 @@ if (rootEl) {
   const root = ReactDOM.createRoot(rootEl);
   root.render(
     <React.StrictMode>
-      <AppProvider enableDebug={false}>
+      <AppProvider enableDebug={true}>
         <DatabaseProvider>
           <App />
         </DatabaseProvider>

@@ -16,7 +16,6 @@ import TransferMessage from "@/components/message/app-message/transfer-message.t
 import UrlMessage from "@/components/message/app-message/url-message.tsx";
 import VideoMessage from "@/components/message/app-message/video-message.tsx";
 import type { MessageProp } from "@/components/message/message.tsx";
-import { useApp } from "@/lib/hooks/appProvider.tsx";
 import { AppMessageType, type DatabaseMessageRow } from "@/lib/schema.ts";
 import { XMLParser } from "fast-xml-parser";
 
@@ -44,12 +43,6 @@ export default function AppMessage({
   direction,
   isChatroom,
 }: AppMessageProps) {
-  const { enableDebug } = useApp();
-
-  if (enableDebug) {
-    console.info(message);
-  }
-
   const xmlParser = new XMLParser({
     ignoreAttributes: false,
   });

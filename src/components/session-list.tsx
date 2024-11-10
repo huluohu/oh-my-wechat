@@ -18,33 +18,45 @@ export default function SessionList({
     query("/sessions");
   }, []);
 
-  console.log(result);
   return (
-    <>
-      <table>
-        <thead className={"sticky top-0"}>
-          <tr>
-            <th>wxid</th>
-            <th>lase</th>
-          </tr>
-        </thead>
-        {result.map((contact) => (
-          <tr
-            key={contact.rowid}
-            onClick={() => {
-              console.log(contact);
-              onClickUser?.(contact.wxid);
-            }}
-          >
-            <td>{contact.wxid}</td>
-            <td>
+
+    <ul>
+
+      {result.map((contact) => (
+        <li
+          key={contact.rowid}
+          className={"p-2.5 flex gap-4 hover:bg-black/5"}
+          onClick={() => {
+            console.log(contact);
+            onClickUser?.(contact.wxid);
+          }}
+        >
+          {
+            contact.headImageThumb ?
+              <img
+                width={48}
+                height={48}
+                className={"w-12 h-12 rounded-lg"}
+                src={contact.headImageThumb}
+                referrerPolicy="no-referrer"
+                loading="lazy"
+              />
+              : <div
+                className={"w-12 h-12 rounded-lg bg-neutral-300"}
+
+              />
+          }
+
+          <div className="flex flex-col">
+            <h4 className={"font-medium"}>
               {(contact.remark?.length ?? 0)
                 ? contact.remark
                 : contact.nickname}
-            </td>
-          </tr>
-        ))}
-      </table>
-    </>
+            </h4>
+
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }

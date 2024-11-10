@@ -6,10 +6,12 @@ import sqliteUrl from "../../../node_modules/sql.js/dist/sql-wasm.wasm?url";
 const DatabaseContext = createContext<{
   initialized: boolean;
   loadDirectory: (directoryHandle: FileSystemDirectoryHandle) => Promise<void>;
+  dictionary: FileSystemDirectoryHandle;
   databases: { [key in DatabaseName]: Database | Database[] };
 }>({
   initialized: false,
   loadDirectory: () => Promise.resolve(),
+  dictionary: undefined,
   databases: {},
 });
 
@@ -17,6 +19,7 @@ export const DatabaseProvider = ({
   children,
 }: { children: React.ReactNode }) => {
   const [initialized, setInitialized] = useState<boolean>(false);
+  const [dictionary, setDictionary] = useState<FileSystemDirectoryHandle>();
   const [databases, setDatabases] = useState<{
     [key: string]: Database | Database[];
   }>({});
@@ -26,6 +29,8 @@ export const DatabaseProvider = ({
   } = {};
 
   const loadDirectory = async (directoryHandle: FileSystemDirectoryHandle) => {
+    setDictionary(directoryHandle);
+
     const SQL = await initSqlJs({ locateFile: () => sqliteUrl });
 
     const manifestDatabaseHandle =
@@ -33,9 +38,12 @@ export const DatabaseProvider = ({
     const manifestDatabaseFileBuffer = await (
       await manifestDatabaseHandle.getFile()
     ).arrayBuffer();
+
     const manifestDatabase = new SQL.Database(
       new Uint8Array(manifestDatabaseFileBuffer),
     );
+
+    databaseTemp[DatabaseName.manifest] = manifestDatabase;
 
     let rows: QueryExecResult[];
 
@@ -128,7 +136,9 @@ export const DatabaseProvider = ({
   }, []);
 
   return (
-    <DatabaseContext.Provider value={{ initialized, loadDirectory, databases }}>
+    <DatabaseContext.Provider
+      value={{ initialized, loadDirectory, dictionary, databases }}
+    >
       {children}
     </DatabaseContext.Provider>
   );

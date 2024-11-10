@@ -1,4 +1,5 @@
 export enum DatabaseName {
+  manifest = "manifest",
   session = "session",
   message = "message",
   WCDB_Contact = "WCDB_Contact",

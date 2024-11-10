@@ -46,9 +46,7 @@ export const Message = {
         Type,
       });
     }
-
-    console.log(result.map((row) => row.message));
-    console.log(result.length);
+;
     return result;
   },
 };

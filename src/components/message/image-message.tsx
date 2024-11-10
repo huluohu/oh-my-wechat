@@ -1,4 +1,6 @@
 import type { MessageProp } from "@/components/message/message.tsx";
+import { useApp } from "@/lib/hooks/appProvider.tsx";
+import useQuery from "@/lib/hooks/useQuery.ts";
 import { XMLParser } from "fast-xml-parser";
 
 interface ImageMessageProps extends MessageProp {
@@ -57,14 +59,27 @@ export default function ImageMessage({
   direction,
   isChatroom,
 }: ImageMessageProps) {
+  const { session } = useApp();
+
+  const [query, isQuerying, result, error] = useQuery<unknown>({});
+
   const xmlParser = new XMLParser({
     ignoreAttributes: false,
   });
   const messageEntity: ImageMessageEntity = xmlParser.parse(message.Message);
 
   return (
-    <div className="bg-neutral-400 w-32 h-24 rounded-lg">
+    <div
+      className="bg-neutral-400 w-32 h-24 rounded-lg"
+      onClick={() => {
+        query("/images", {
+          session,
+          id: message.MesLocalID,
+        });
+      }}
+    >
       image: {message.MesLocalID}
+      <img src={result} loading="lazy" />
     </div>
   );
 }

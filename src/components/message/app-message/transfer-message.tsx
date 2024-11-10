@@ -1,6 +1,10 @@
+import type {
+  AppMessageEntity,
+  AppMessageProps,
+} from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-export interface TransferMessageVM {
+type TransferMessageEntity = AppMessageEntity<{
   type: AppMessageType.TRANSFER;
   title: string;
   des: string;
@@ -67,19 +71,24 @@ export interface TransferMessageVM {
       launcherusername: string;
     };
   };
+}>;
+
+interface TransferMessageProps extends Omit<AppMessageProps, "message"> {
+  message: TransferMessageEntity;
 }
 
-interface TransferMessageProps {
-  message: TransferMessageVM;
-}
-
-export default function TransferMessage({ message }: TransferMessageProps) {
+export default function TransferMessage({
+  message,
+  variant = "default",
+  direction,
+  isChatroom,
+}: TransferMessageProps) {
   return (
     <div>
       <p>
-        {message.wcpayinfo.paysubtype === 3 && "收"}
-        {message.wcpayinfo.paysubtype === 8 && "发"}
-        {message.title}: {message.des}
+        {message.msg.appmsg.wcpayinfo.paysubtype === 3 && "收"}
+        {message.msg.appmsg.wcpayinfo.paysubtype === 8 && "发"}
+        {message.msg.appmsg.title}: {message.msg.appmsg.des}
       </p>
     </div>
   );
