@@ -1,10 +1,7 @@
-import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-type LiveMessageEntity = AppMessageEntity<{
+export interface LiveMessageEntity {
   type: AppMessageType.LIVE;
   title: string;
   finderLive: {
@@ -24,21 +21,14 @@ type LiveMessageEntity = AppMessageEntity<{
     };
     chatroomId: string;
   };
-}>;
-
-interface LiveMessageProps extends Omit<AppMessageProps, "message"> {
-  message: LiveMessageEntity;
 }
 
-export default function LiveMessage({
-  message,
-  variant = "default",
-  direction,
-  isChatroom,
-}: LiveMessageProps) {
+type LiveMessageProps = AppMessageProps<LiveMessageEntity>;
+
+export default function LiveMessage({ message, ...props }: LiveMessageProps) {
   return (
-    <div>
-      <p>直播：{message.msg.appmsg.finderLive.liveNickname})</p>
+    <div {...props}>
+      <p>直播：{message.message_entity.msg.appmsg.finderLive.liveNickname})</p>
     </div>
   );
 }

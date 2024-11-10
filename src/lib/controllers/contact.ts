@@ -1,7 +1,13 @@
-import { DatabaseName } from "@/lib/schema.ts";
+import {
+  type DatabaseFriendRow,
+  type Group,
+  type User,
+  WCDatabaseNames,
+  type WCDatabases,
+} from "@/lib/schema.ts";
 import protobuf from "protobufjs";
 
-const protos = {
+const dbContactPprotos = {
   dbContactRemark: {
     nickname: {
       type: "string",
@@ -115,79 +121,236 @@ const protos = {
     //   id: 12,
     // },
   },
+  dbContactChatRoom: {
+    chatroomMemberIds: {
+      type: "string",
+      id: 1,
+    },
+    chatroomOwnerIds: {
+      type: "string",
+      id: 2,
+    },
+    chatroomaMaxCount: {
+      type: "uint32",
+      id: 4,
+    },
+    chatroomVersion: {
+      type: "uint32",
+      id: 5,
+    },
+    chatroomMember: {
+      type: "string", // xml
+      id: 6,
+    },
+  },
 };
+const dbContactProtobufRoot = protobuf.Root.fromJSON({
+  nested: {
+    ContactRemark: {
+      fields: dbContactPprotos.dbContactRemark,
+    },
+    HeadImage: {
+      fields: dbContactPprotos.dbContactHeadImage,
+    },
+    Profile: {
+      fields: dbContactPprotos.dbContactProfile,
+    },
+    Social: {
+      fields: dbContactPprotos.dbContactSocial,
+    },
+  },
+});
 
-export const Contact = {
-  all: async (databases, cursor: string) => {
-    const rows = databases[DatabaseName.WCDB_Contact].exec(
-      "SELECT rowid, userName, dbContactRemark, dbContactChatRoom, dbContactHeadImage, dbContactProfile, dbContactSocial, type FROM Friend",
-    );
+export const ContactController = {
+  all: async (databases: WCDatabases): Promise<User[]> => {
+    const db = databases.WCDB_Contact;
 
-    const result = [];
-
-    for (const row of rows[0].values) {
-      const [
-        rowid,
-        userName,
-        dbContactRemark,
-        dbContactChatRoom,
-        dbContactHeadImage,
-        dbContactProfile,
-        dbContactSocial,
-        type,
-      ] = row;
-
-      if (userName.startsWith("gh_")) continue;
-      if (type % 2 === 0) continue;
-
-      if (dbContactRemark) {
-        try {
-          const root = protobuf.Root.fromJSON({
-            nested: {
-              ContactRemark: {
-                fields: protos.dbContactRemark,
-              },
-              HeadImage: {
-                fields: protos.dbContactHeadImage,
-              },
-              Profile: {
-                fields: protos.dbContactProfile,
-              },
-              Social: {
-                fields: protos.dbContactSocial,
-              },
-            },
-          });
-
-          const remarkBuffer = new Uint8Array(dbContactRemark);
-          const headImageBuffer = new Uint8Array(dbContactHeadImage);
-          const profileBuffer = new Uint8Array(dbContactProfile);
-          const socialBuffer = new Uint8Array(dbContactSocial);
-
-          const remarkObj = root
-            .lookupType("ContactRemark")
-            .decode(remarkBuffer);
-          const headImageObj = root
-            .lookupType("HeadImage")
-            .decode(headImageBuffer);
-          const profileObj = root.lookupType("Profile").decode(profileBuffer);
-          const socialObj = root.lookupType("Social").decode(socialBuffer);
-
-          result.push({
-            rowid,
-            wxid: userName,
-            ...remarkObj,
-            ...headImageObj,
-            ...profileObj,
-            ...socialObj,
-            type,
-          });
-        } catch (err) {
-          console.error("Error decoding contact remark:", err);
-        }
-      }
+    if (!db) {
+      throw new Error("WCDB_Contact database is not found");
     }
 
-    return result;
+    const dbFriendRows: DatabaseFriendRow[] = db
+      .exec(
+        "SELECT rowid, userName, dbContactRemark, dbContactChatRoom, dbContactHeadImage, dbContactProfile, dbContactSocial, type FROM Friend WHERE (type & 1) != 0",
+      )[0]
+      .values.reduce((acc, cur) => {
+        acc.push({
+          rowid: cur[0],
+          userName: cur[1],
+          dbContactRemark: cur[2],
+          dbContactChatRoom: cur[3],
+          dbContactHeadImage: cur[4],
+          dbContactProfile: cur[5],
+          dbContactSocial: cur[6],
+          type: cur[7],
+        } as DatabaseFriendRow);
+        return acc;
+      }, [] as DatabaseFriendRow[]);
+
+    return dbFriendRows.reduce((acc, cur) => {
+      switch (true) {
+        case cur.userName.startsWith("gh_"): // 公众号
+          // case cur.type % 2 === 1: // 群组
+          return acc;
+        default: {
+          // @ts-ignore
+          const remarkObj: { [key: string]: unknown } = dbContactProtobufRoot
+            .lookupType("ContactRemark")
+            .decode(cur.dbContactRemark);
+          // @ts-ignore
+          const headImageObj: { [key: string]: unknown } = dbContactProtobufRoot
+            .lookupType("HeadImage")
+            .decode(cur.dbContactHeadImage);
+          // @ts-ignore
+          const profileObj: { [key: string]: unknown } = dbContactProtobufRoot
+            .lookupType("Profile")
+            .decode(cur.dbContactProfile);
+          // @ts-ignore
+          const socialObj: { [key: string]: unknown } = dbContactProtobufRoot
+            .lookupType("Social")
+            .decode(cur.dbContactSocial);
+
+          acc.push({
+            id: cur.userName,
+            user_id: remarkObj.id as string,
+            username: remarkObj.nickname as string,
+            bio: profileObj.profileBio as string,
+            photo: {
+              thumb: headImageObj.headImageThumb as string,
+              origin: headImageObj.headImage as string,
+            },
+            // raw: {
+            //   ...cur,
+            //   ...remarkObj,
+            //   ...headImageObj,
+            //   ...profileObj,
+            //   ...socialObj,
+            // },
+          });
+
+          return acc;
+        }
+      }
+    }, [] as User[]);
+  },
+
+  in: async (
+    databases: WCDatabases,
+    ids: string[],
+  ): Promise<Array<User | Group>> => {
+    const db = databases.WCDB_Contact;
+
+    if (!db) {
+      throw new Error("WCDB_Contact database is not found");
+    }
+
+    const dbFriendRows: DatabaseFriendRow[] = db
+      .exec(
+        "SELECT rowid, userName, dbContactRemark, dbContactChatRoom, dbContactHeadImage, dbContactProfile, dbContactSocial, type FROM Friend",
+      )[0]
+      .values.reduce((acc, cur) => {
+        acc.push({
+          rowid: cur[0],
+          userName: cur[1],
+          dbContactRemark: cur[2],
+          dbContactChatRoom: cur[3],
+          dbContactHeadImage: cur[4],
+          dbContactProfile: cur[5],
+          dbContactSocial: cur[6],
+          type: cur[7],
+        } as DatabaseFriendRow);
+        return acc;
+      }, [] as DatabaseFriendRow[]);
+
+    return dbFriendRows.reduce(
+      (acc, cur) => {
+        switch (true) {
+          case cur.userName.startsWith("gh_"):
+          case !ids.includes(cur.userName):
+            return acc;
+          default: {
+            // @ts-ignore
+            const remarkObj: { [key: string]: unknown } = dbContactProtobufRoot
+              .lookupType("ContactRemark")
+              .decode(cur.dbContactRemark);
+            // @ts-ignore
+            const headImageObj: { [key: string]: unknown } =
+              dbContactProtobufRoot
+                .lookupType("HeadImage")
+                .decode(cur.dbContactHeadImage);
+            // @ts-ignore
+            const profileObj: { [key: string]: unknown } = dbContactProtobufRoot
+              .lookupType("Profile")
+              .decode(cur.dbContactProfile);
+            // @ts-ignore
+            const socialObj: { [key: string]: unknown } = dbContactProtobufRoot
+              .lookupType("Social")
+              .decode(cur.dbContactSocial);
+
+            if (cur.userName.endsWith("@chatroom")) {
+              acc.push({
+                id: cur.userName,
+                title: (remarkObj.nickname as string).length
+                  ? remarkObj.nickname
+                  : "群聊",
+                ...((remarkObj.remark as string).length
+                  ? {
+                      remark: remarkObj.remark,
+                    }
+                  : {}),
+                ...(headImageObj.headImageThumb
+                  ? {
+                      photo: {
+                        thumb: headImageObj.headImageThumb,
+                      },
+                    }
+                  : {}),
+                members: [],
+
+                raw: {
+                  ...cur,
+                  ...remarkObj,
+                  ...headImageObj,
+                  ...profileObj,
+                  ...socialObj,
+                  // .lookupType("Chatroom")
+                  // .decode(cur.dbContactChatRoom),
+                },
+              } as Group);
+            } else {
+              acc.push({
+                id: cur.userName,
+                user_id: remarkObj.id,
+                username: remarkObj.nickname,
+                ...((remarkObj.remark as string).length
+                  ? {
+                      remark: remarkObj.remark,
+                    }
+                  : {}),
+                bio: profileObj.profileBio,
+
+                ...(headImageObj.headImageThumb
+                  ? {
+                      photo: {
+                        thumb: headImageObj.headImageThumb,
+                      },
+                    }
+                  : {}),
+
+                raw: {
+                  ...cur,
+                  ...remarkObj,
+                  ...headImageObj,
+                  ...profileObj,
+                  ...socialObj,
+                },
+              } as User);
+            }
+            return acc;
+          }
+        }
+      },
+      [] as Array<User | Group>,
+    );
   },
 };

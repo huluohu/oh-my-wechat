@@ -1,13 +1,9 @@
 import type { ImageMessageEntity } from "@/components/message/image-message.tsx";
-import {
-  type PhotpSize,
-  WCDatabaseNames,
-  type WCDatabases,
-} from "@/lib/schema.ts";
+import type { PhotpSize, WCDatabases } from "@/lib/schema.ts";
 import CryptoJS from "crypto-js";
 import { getFileFromManifast as getFilesFromManifast } from "../utils";
 
-export const ImageController = {
+export const AttachController = {
   get: async (
     dictionary: FileSystemDirectoryHandle,
     databases: WCDatabases,
@@ -32,7 +28,7 @@ export const ImageController = {
     const files = await getFilesFromManifast(
       db,
       dictionary,
-      `%/Img/${sessionIdMd5}/${messageLocalId}.%`,
+      `%/OpenData/${sessionIdMd5}/${messageLocalId}.%`,
     );
 
     const result: PhotpSize[] = [];
@@ -50,7 +46,7 @@ export const ImageController = {
           size: "thumb",
           src: URL.createObjectURL(file.file),
           width: Number.parseInt(messageEntity.msg.img["@_cdnthumbwidth"]),
-          height: Number.parseInt(messageEntity.msg.img["@_cdnthumbheight"]),
+          height: Number.parseInt(messageEntity.msg.img["@_cdnthumbwidth"]),
         });
       }
     }

@@ -1,10 +1,7 @@
-import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-type AudioMessageEntity = AppMessageEntity<{
+export interface AudioMessageEntity {
   type: AppMessageType.AUDIO;
   title: string;
   des: string;
@@ -22,21 +19,14 @@ type AudioMessageEntity = AppMessageEntity<{
     musicDuration: number;
     mid: string;
   };
-}>;
-
-interface AudioMessageProps extends Omit<AppMessageProps, "message"> {
-  message: AudioMessageEntity;
 }
 
-export default function AudioMessage({
-  message,
-  variant = "default",
-  direction,
-  isChatroom,
-}: AudioMessageProps) {
+type AudioMessageProps = AppMessageProps<AudioMessageEntity>;
+
+export default function AudioMessage({ message, ...props }: AudioMessageProps) {
   return (
-    <div>
-      <p>音频: {message.msg.appmsg.title})</p>
+    <div {...props}>
+      <p>音频: {message.message_entity.msg.appmsg.title})</p>
     </div>
   );
 }

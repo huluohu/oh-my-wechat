@@ -1,6 +1,6 @@
 import AppMessage from "@/components/message/app-message.tsx";
+import ChatroomVoipMessage from "@/components/message/chatroom-voip-message.tsx";
 import ContactMessage from "@/components/message/contact-message.tsx";
-import GroupVoipMessage from "@/components/message/group-voip-message.tsx";
 import ImageMessage from "@/components/message/image-message.tsx";
 import LocationMessage from "@/components/message/location-message.tsx";
 import MicroVideoMessage from "@/components/message/micro-video-message.tsx";
@@ -12,47 +12,56 @@ import VideoMessage from "@/components/message/video-message.tsx";
 import VoiceMessage from "@/components/message/voice-message.tsx";
 import VoipMessage from "@/components/message/voip-message.tsx";
 import {
-  type DatabaseMessageRow,
+  AppMessageType,
   type MessageDirection,
   MessageType,
+  type Message as MessageVM,
 } from "@/lib/schema.ts";
 import { cn } from "@/lib/utils.ts";
 import { ErrorBoundary } from "react-error-boundary";
-import { handler } from "tailwindcss-animate";
 
-export interface MessageProp {
-  message: DatabaseMessageRow;
+export interface MessageProp<T = MessageVM>
+  extends React.HTMLAttributes<HTMLDivElement> {
+  message: T;
   direction: MessageDirection;
-  isChatroom: boolean;
+  showPhoto: boolean;
+  showUsername: boolean;
+  [key: string]: unknown;
 }
 
-export default function Message({
-  message,
-  direction,
-  isChatroom = false,
-}: MessageProp) {
-
-  const handleConsoleMessage = (message) => {
-    console.log(message);
-  }
-
-  return <ErrorBoundary fallback={<div>解析失败的消息</div>}>
-    <MessageComponent
-      message={message}
-      variant={"default"}
-      direction={direction}
-      isChatroom={isChatroom}
-    />
-  </ErrorBoundary>
-
+export default function Message({ message, direction, ...props }: MessageProp) {
+  return (
+    <ErrorBoundary
+      fallback={
+        <div
+          onDoubleClick={() => {
+            console.log(message);
+          }}
+        >
+          解析失败的消息: {message.raw_message}
+        </div>
+      }
+    >
+      <MessageComponent
+        onDoubleClick={() => {
+          console.log(message);
+        }}
+        message={message}
+        variant={"default"}
+        direction={direction}
+        {...props}
+      />
+    </ErrorBoundary>
+  );
 }
 
 function MessageComponent({
   message,
   direction,
-  isChatroom = false,
+  showPhoto = false,
+  ...props
 }: MessageProp) {
-  switch (message.Type) {
+  switch (message.type) {
     case MessageType.TEXT:
       return (
         <div
@@ -60,17 +69,17 @@ function MessageComponent({
             "flex gap-x-2",
             ["flex-row-reverse", "flex-row"][direction],
           )}
-
-          onDoubleClick={() => {
-            handleConsoleMessage(message);
-          }}
         >
-          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          {showPhoto && (
+            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          )}
+
           <TextMessage
             message={message}
             variant={"default"}
             direction={direction}
-            isChatroom={isChatroom}
+            showPhoto={showPhoto}
+            {...props}
           />
         </div>
       );
@@ -82,16 +91,16 @@ function MessageComponent({
             "flex gap-x-2",
             ["flex-row-reverse", "flex-row"][direction],
           )}
-          onDoubleClick={() => {
-            handleConsoleMessage(message);
-          }}
         >
-          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          {showPhoto && (
+            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          )}
           <ImageMessage
             message={message}
             variant={"default"}
             direction={direction}
-            isChatroom={isChatroom}
+            showPhoto={showPhoto}
+            {...props}
           />
         </div>
       );
@@ -103,16 +112,16 @@ function MessageComponent({
             "flex gap-x-2",
             ["flex-row-reverse", "flex-row"][direction],
           )}
-          onDoubleClick={() => {
-            handleConsoleMessage(message);
-          }}
         >
-          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          {showPhoto && (
+            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          )}
           <VoiceMessage
             message={message}
             variant={"default"}
             direction={direction}
-            isChatroom={isChatroom}
+            showPhoto={showPhoto}
+            {...props}
           />
         </div>
       );
@@ -124,16 +133,16 @@ function MessageComponent({
             "flex gap-x-2",
             ["flex-row-reverse", "flex-row"][direction],
           )}
-          onDoubleClick={() => {
-            handleConsoleMessage(message);
-          }}
         >
-          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          {showPhoto && (
+            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          )}
           <ContactMessage
             message={message}
             variant={"default"}
             direction={direction}
-            isChatroom={isChatroom}
+            showPhoto={showPhoto}
+            {...props}
           />
         </div>
       );
@@ -145,16 +154,16 @@ function MessageComponent({
             "flex gap-x-2",
             ["flex-row-reverse", "flex-row"][direction],
           )}
-          onDoubleClick={() => {
-            handleConsoleMessage(message);
-          }}
         >
-          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          {showPhoto && (
+            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          )}
           <VideoMessage
             message={message}
             variant={"default"}
             direction={direction}
-            isChatroom={isChatroom}
+            showPhoto={showPhoto}
+            {...props}
           />
         </div>
       );
@@ -166,16 +175,16 @@ function MessageComponent({
             "flex gap-x-2",
             ["flex-row-reverse", "flex-row"][direction],
           )}
-          onDoubleClick={() => {
-            handleConsoleMessage(message);
-          }}
         >
-          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          {showPhoto && (
+            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          )}
           <MicroVideoMessage
             message={message}
             variant={"default"}
             direction={direction}
-            isChatroom={isChatroom}
+            showPhoto={showPhoto}
+            {...props}
           />
         </div>
       );
@@ -187,16 +196,16 @@ function MessageComponent({
             "flex gap-x-2",
             ["flex-row-reverse", "flex-row"][direction],
           )}
-          onDoubleClick={() => {
-            handleConsoleMessage(message);
-          }}
         >
-          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          {showPhoto && (
+            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          )}
           <StickerMessage
             message={message}
             variant={"default"}
             direction={direction}
-            isChatroom={isChatroom}
+            showPhoto={showPhoto}
+            {...props}
           />
         </div>
       );
@@ -208,16 +217,16 @@ function MessageComponent({
             "flex gap-x-2",
             ["flex-row-reverse", "flex-row"][direction],
           )}
-          onDoubleClick={() => {
-            handleConsoleMessage(message);
-          }}
         >
-          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          {showPhoto && (
+            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          )}
           <LocationMessage
             message={message}
             variant={"default"}
             direction={direction}
-            isChatroom={isChatroom}
+            showPhoto={showPhoto}
+            {...props}
           />
         </div>
       );
@@ -229,16 +238,17 @@ function MessageComponent({
             "flex gap-x-2",
             ["flex-row-reverse", "flex-row"][direction],
           )}
-          onDoubleClick={() => {
-            handleConsoleMessage(message);
-          }}
         >
-          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          {showPhoto &&
+            message.message_entity.msg.appmsg.type !== AppMessageType.PAT && (
+              <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+            )}
           <AppMessage
             message={message}
             variant={"default"}
             direction={direction}
-            isChatroom={isChatroom}
+            showPhoto={showPhoto}
+            {...props}
           />
         </div>
       );
@@ -250,16 +260,16 @@ function MessageComponent({
             "flex gap-x-2",
             ["flex-row-reverse", "flex-row"][direction],
           )}
-          onDoubleClick={() => {
-            handleConsoleMessage(message);
-          }}
         >
-          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          {showPhoto && (
+            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          )}
           <VoipMessage
             message={message}
             variant={"default"}
             direction={direction}
-            isChatroom={isChatroom}
+            showPhoto={showPhoto}
+            {...props}
           />
         </div>
       );
@@ -271,16 +281,16 @@ function MessageComponent({
             "flex gap-x-2",
             ["flex-row-reverse", "flex-row"][direction],
           )}
-          onDoubleClick={() => {
-            handleConsoleMessage(message);
-          }}
         >
-          <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
-          <GroupVoipMessage
+          {showPhoto && (
+            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+          )}
+          <ChatroomVoipMessage
             message={message}
             variant={"default"}
             direction={direction}
-            isChatroom={isChatroom}
+            showPhoto={showPhoto}
+            {...props}
           />
         </div>
       );
@@ -290,7 +300,8 @@ function MessageComponent({
         <SystemMessage
           message={message}
           direction={direction}
-          isChatroom={isChatroom}
+          showPhoto={false}
+          {...props}
         />
       );
 
@@ -299,12 +310,12 @@ function MessageComponent({
         <SystemExtendedMessage
           message={message}
           direction={direction}
-          isChatroom={isChatroom}
+          showPhoto={false}
+          {...props}
         />
       );
 
     default:
-      console.error("Unknown message type", message.Type, message);
-      return <div>Unknown message type: {message.Type}</div>;
+      return <div>Unknown message type: {(message as MessageVM).type}</div>;
   }
 }

@@ -1,13 +1,17 @@
 import type { MessageProp } from "@/components/message/message.tsx";
 import { useApp } from "@/lib/hooks/appProvider.tsx";
 import useQuery from "@/lib/hooks/useQuery.ts";
-import { XMLParser } from "fast-xml-parser";
+import type {
+  ImageMessage as ImageMessageVM,
+  PhotpSize,
+} from "@/lib/schema.ts";
+import { useEffect } from "react";
 
-interface ImageMessageProps extends MessageProp {
+interface ImageMessageProps extends MessageProp<ImageMessageVM> {
   variant: "default" | "referenced";
 }
 
-interface ImageMessageEntity {
+export interface ImageMessageEntity {
   msg: {
     img: {
       "@_hdlength": string;
@@ -53,33 +57,30 @@ interface ImageMessageEntity {
   };
 }
 
-export default function ImageMessage({
-  message,
-  variant = "default",
-  direction,
-  isChatroom,
-}: ImageMessageProps) {
-  const { session } = useApp();
+export default function ImageMessage({ message, ...props }: ImageMessageProps) {
+  const { chat } = useApp();
 
-  const [query, isQuerying, result, error] = useQuery<unknown>({});
+  const [query, isQuerying, result, error] = useQuery<PhotpSize[]>([]);
 
-  const xmlParser = new XMLParser({
-    ignoreAttributes: false,
-  });
-  const messageEntity: ImageMessageEntity = xmlParser.parse(message.Message);
+  useEffect(() => {
+    if (chat)
+      query("/images", {
+        sessionId: chat.id,
+        messageLocalId: message.local_id,
+        messageEntity: message.message_entity,
+      });
+  }, []);
 
   return (
-    <div
-      className="bg-neutral-400 w-32 h-24 rounded-lg"
-      onClick={() => {
-        query("/images", {
-          session,
-          id: message.MesLocalID,
-        });
-      }}
-    >
-      image: {message.MesLocalID}
-      <img src={result} loading="lazy" />
+    <div className="max-w-prose rounded-lg overflow-hidden" {...props}>
+      {result.length ? (
+        <img
+          src={result[0].src}
+          loading="lazy"
+          alt={""}
+          className="max-h-[80vh]"
+        />
+      ) : null}
     </div>
   );
 }

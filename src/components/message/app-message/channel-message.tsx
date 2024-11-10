@@ -1,10 +1,7 @@
-import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-type ChannelMessageEntity = AppMessageEntity<{
+export interface ChannelMessageEntity {
   type: AppMessageType.CHANNEL;
   title: string;
   finderFeed: {
@@ -43,21 +40,30 @@ type ChannelMessageEntity = AppMessageEntity<{
     bizAuthIconUrl: string;
     bizAuthIconType: number;
   };
-}>;
-
-interface ChannelMessageProps extends Omit<AppMessageProps, "message"> {
-  message: ChannelMessageEntity;
 }
+
+type ChannelMessageProps = AppMessageProps<ChannelMessageEntity>;
 
 export default function ChannelMessage({
   message,
-  variant = "default",
-  direction,
-  isChatroom,
+
+  ...props
 }: ChannelMessageProps) {
   return (
-    <div>
-      <p>频道: {message.msg.appmsg.finderFeed.nickname}: </p>
+    <div className="relative w-48" {...props}>
+      <img
+        src={
+          message.message_entity.msg.appmsg.finderFeed.mediaList.media.coverUrl
+        }
+        alt=""
+        referrerPolicy="no-referrer"
+      />
+      <div className="absolute right-0 bottom-0 flex flex-col text-white">
+        <h4>{message.message_entity.msg.appmsg.finderFeed.nickname}</h4>
+        <p>{message.message_entity.msg.appmsg.finderFeed.desc}</p>
+      </div>
+
+      <div className="absolute right-2 bottom-2 w-4 h-4 bg-neutral-500"></div>
     </div>
   );
 }

@@ -1,10 +1,14 @@
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
+import MiniappMessage, {
+  type MiniappMessageEntity,
+} from "@/components/message/app-message/miniapp-message.tsx";
 import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
-import type { AppMessageType } from "@/lib/schema.ts";
+  AppMessageType,
+  AppMessage as AppMessageVM,
+} from "@/lib/schema.ts";
+import { decodeHTMLComponent } from "@/lib/utils.ts";
 
-type MiniappUnknownEntity = AppMessageEntity<{
+export interface MiniappUnknownMessageEntity {
   type: AppMessageType.MINIAPP_UNKNOWN;
   title: string;
   des: string;
@@ -41,22 +45,18 @@ type MiniappUnknownEntity = AppMessageEntity<{
       fromopensdk: number;
     };
   };
-}>;
-
-interface MiniappUnknownProps extends Omit<AppMessageProps, "message"> {
-  message: MiniappUnknownEntity;
 }
+
+type MiniappUnknownProps = AppMessageProps<MiniappUnknownMessageEntity>;
 
 export default function MiniappUnknown({
   message,
-  variant = "default",
-  direction,
-  isChatroom,
+  ...props
 }: MiniappUnknownProps) {
   return (
-    <div>
-      小程序：
-      <p>{message.msg.appmsg.des}</p>
-    </div>
+    <MiniappMessage
+      message={message as unknown as AppMessageVM<MiniappMessageEntity>}
+      {...props}
+    />
   );
 }

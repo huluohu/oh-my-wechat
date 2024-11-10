@@ -1,11 +1,11 @@
 import type { MessageProp } from "@/components/message/message.tsx";
-import { XMLParser } from "fast-xml-parser";
+import type { VideoMessage as VideoMessageVM } from "@/lib/schema.ts";
 
-interface VideoMessageProps extends MessageProp {
+interface VideoMessageProps extends MessageProp<VideoMessageVM> {
   variant: "default" | "referenced";
 }
 
-interface VideoMessageEntity {
+export interface VideoMessageEntity {
   msg: {
     videomsg: {
       "@_length": string;
@@ -48,15 +48,10 @@ interface VideoMessageEntity {
   };
 }
 
-export default function VideoMessage({
-  message,
-  variant = "default",
-  direction,
-  isChatroom,
-}: VideoMessageProps) {
-  const xmlParser = new XMLParser({
-    ignoreAttributes: false,
-  });
-  const messageEntity: VideoMessageEntity = xmlParser.parse(message.Message);
-  return <div className="">video:{message.MesLocalID}</div>;
+export default function VideoMessage({ message, ...props }: VideoMessageProps) {
+  return (
+    <div className="" {...props}>
+      video:{message.local_id}
+    </div>
+  );
 }

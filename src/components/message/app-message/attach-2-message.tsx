@@ -1,10 +1,7 @@
-import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-type Attach2MessageEntity = AppMessageEntity<{
+export interface Attach2MessageEntity {
   type: AppMessageType.ATTACH_2;
   title: string;
   des: string;
@@ -16,21 +13,17 @@ type Attach2MessageEntity = AppMessageEntity<{
     fileuploadtoken: string;
     status: number;
   };
-}>;
-
-interface Attach2MessageProps extends Omit<AppMessageProps, "message"> {
-  message: Attach2MessageEntity;
 }
+
+type Attach2MessageProps = AppMessageProps<Attach2MessageEntity>;
 
 export default function Attach2Message({
   message,
-  variant = "default",
-  direction,
-  isChatroom,
+  ...props
 }: Attach2MessageProps) {
   return (
-    <div>
-      <p>局域网文件？: {message.msg.appmsg.title}</p>
+    <div {...props}>
+      <p>局域网文件？: {message.message_entity.msg.appmsg.title}</p>
     </div>
   );
 }

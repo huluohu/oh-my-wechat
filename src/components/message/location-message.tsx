@@ -1,11 +1,11 @@
 import type { MessageProp } from "@/components/message/message.tsx";
-import { XMLParser } from "fast-xml-parser";
+import type { LocationMessage as LocationMessageVM } from "@/lib/schema.ts";
 
-interface LocationMessageProps extends MessageProp {
+interface LocationMessageProps extends MessageProp<LocationMessageVM> {
   variant: "default" | "referenced";
 }
 
-interface LocationMessageEntity {
+export interface LocationMessageEntity {
   msg: {
     location: {
       "@_x": string; // 纬度
@@ -30,19 +30,12 @@ interface LocationMessageEntity {
 
 export default function LocationMessage({
   message,
-  variant = "default",
-  direction,
-  isChatroom,
+  ...props
 }: LocationMessageProps) {
-  const xmlParser = new XMLParser({
-    ignoreAttributes: false,
-  });
-  const messageEntity: LocationMessageEntity = xmlParser.parse(message.Message);
-
   return (
-    <div className="">
-      location: {messageEntity.msg.location["@_poiname"]},{" "}
-      {messageEntity.msg.location["@_label"]}
+    <div className="" {...props}>
+      location: {message.message_entity.msg.location["@_poiname"]},{" "}
+      {message.message_entity.msg.location["@_label"]}
     </div>
   );
 }

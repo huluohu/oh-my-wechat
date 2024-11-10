@@ -1,11 +1,13 @@
 import type { MessageProp } from "@/components/message/message.tsx";
-import { MessageDirection } from "@/lib/schema.ts";
+import type { TextMessage as TextMessageVM } from "@/lib/schema.ts";
 import { cn } from "@/lib/utils.ts";
 import React from "react";
 
-interface TextMessageProps extends MessageProp {
+interface TextMessageProps extends MessageProp<TextMessageVM> {
   variant: "default" | "referenced";
 }
+
+export type TextMessageEntity = string;
 
 const wcEmojiKeys = [
   "微笑",
@@ -698,39 +700,78 @@ export default function TextMessage({
   message,
   variant = "default",
   direction,
-  isChatroom,
-}: TextMessageProps) {
-  const messageEntity = message.Message;
-  const paragraphs = messageEntity.split("\n").map((p) =>
-    p
-      .split(/[\[\]]/)
-      .filter((s) => s.length)
-      .map((s) =>
-        wcEmojiKeys.indexOf(s) > -1 ? (
-          <img title={s} className={"inline bg-red-200"} />
-        ) : (
-          <React.Fragment>{s}</React.Fragment>
-        ),
-      ),
-  );
+  showUsername,
 
-  return (
-    <div
-      className={cn(
-        "py-2 px-3 w-fit rounded-lg",
-        direction === MessageDirection.outgoing
-          ? "bg-[#95EB69]"
-          : "bg-neutral-300",
-        "text-[17px] tracking-[-.022em] leading-[1.4705882353] break-words text-pretty",
-        "space-y-6",
-        textMessageVariants[variant],
-      )}
-    >
-      {paragraphs.map((p, index) => (
-        <p key={`${index}`} className={""}>
-          {p.map((s) => s)}
+  ...props
+}: TextMessageProps) {
+  if (variant === "default") {
+    const paragraphs = message.message_entity.split("\n").map((p) =>
+      p
+        .split(/[\[\]]/)
+        .filter((s) => s.length)
+        .map((s, index) =>
+          wcEmojiKeys.indexOf(s) > -1 ? (
+            // <img
+            //   key={index}
+            //   title={s}
+            //   className={"inline bg-red-200"}
+            //   alt={""}
+            // />
+            <span>[{s}]</span>
+          ) : (
+            <React.Fragment key={index}>{s}</React.Fragment>
+          ),
+        ),
+    );
+
+    return (
+      <div
+        className={cn(
+          "py-2.5 px-3 w-fit max-w-[20em] rounded-lg",
+          ["bg-[#95EB69]", "bg-white"][direction],
+          "leading-normal tracking-[-.022em] break-words text-pretty",
+          textMessageVariants[variant],
+        )}
+        {...props}
+      >
+        {showUsername && message.from && (
+          <div className={"mt-[-0.25em] text-sm"}>
+            <small className={"text-neutral-400"}>
+              {message.from.remark ?? message.from.username}
+            </small>
+          </div>
+        )}
+        <div className="space-y-[1lh]">
+          {paragraphs.map((p, index) => (
+            <p key={`${index}`} className={""}>
+              {p.map((s) => s)}
+            </p>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === "referenced") {
+    return (
+      <div
+        className={
+          "pl-2 pr-2.5 py-1.5 text-[13px] bg-white/30 border-l-4 border-t-white/60 rounded"
+        }
+      >
+        <p>
+          {message.from.photo?.thumb && (
+            <img
+              src={message.from.photo?.thumb}
+              alt=""
+              referrerPolicy="no-referrer"
+              className={"inline-block align-sub mr-0.5 w-4 h-4 rounded-sm"}
+            />
+          )}
+          {message.from.remark ?? message.from.username}:
+          {message.message_entity as string}
         </p>
-      ))}
-    </div>
-  );
+      </div>
+    );
+  }
 }

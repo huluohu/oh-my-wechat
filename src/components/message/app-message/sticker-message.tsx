@@ -1,10 +1,7 @@
-import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-type StickerMessageEntity = AppMessageEntity<{
+export interface StickerMessageEntity {
   type: AppMessageType.STICKER;
   title: string;
   appattach: {
@@ -22,21 +19,17 @@ type StickerMessageEntity = AppMessageEntity<{
     cdnthumbheight: number;
     cdnthumbmd5: string;
   };
-}>;
-
-interface StickerMessageProps extends Omit<AppMessageProps, "message"> {
-  message: StickerMessageEntity;
 }
+
+type StickerMessageProps = AppMessageProps<StickerMessageEntity>;
 
 export default function StickerMessage({
   message,
-  variant = "default",
-  direction,
-  isChatroom,
+  ...props
 }: StickerMessageProps) {
   return (
-    <div>
-      <p>表情</p>
+    <div {...props}>
+      <p>表情 {message.message_entity.msg.appmsg.title}</p>
     </div>
   );
 }

@@ -1,28 +1,31 @@
+import type { Chat } from "@/lib/schema.ts";
 import { createContext, useContext, useState } from "react";
 
 interface AppProviderContext {
-  session: string;
-  setSession: (session: string) => void;
+  chat: Chat | undefined;
+  setChat: (chat: Chat) => void;
 
   enableDebug: boolean;
 }
 
 const AppContext = createContext<AppProviderContext>({
-  session: undefined,
-  setSession: () => {},
+  chat: undefined,
+  setChat: () => {},
 
   enableDebug: false,
 });
 
-interface AppProviderProps extends AppProviderContext {
+interface AppProviderProps {
+  enableDebug: boolean;
+
   children: React.ReactNode;
 }
 
 export const AppProvider = ({ children, ...props }: AppProviderProps) => {
-  const [session, setSession] = useState<string>(props.session);
+  const [chat, setChat] = useState<Chat>();
 
   return (
-    <AppContext.Provider value={{ ...props, session, setSession }}>
+    <AppContext.Provider value={{ ...props, chat: chat, setChat: setChat }}>
       {children}
     </AppContext.Provider>
   );

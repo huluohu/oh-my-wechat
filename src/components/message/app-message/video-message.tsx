@@ -1,10 +1,7 @@
-import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-type VideoMessageEntity = AppMessageEntity<{
+export interface VideoMessageEntity {
   type: AppMessageType.VIDEO;
   title: string;
   des: string;
@@ -25,22 +22,15 @@ type VideoMessageEntity = AppMessageEntity<{
     encryver: 0 | 1;
     filekey: string;
   };
-}>;
-
-interface VideoMessageProps extends Omit<AppMessageProps, "message"> {
-  message: VideoMessageEntity;
 }
 
-export default function VideoMessage({
-  message,
-  variant = "default",
-  direction,
-  isChatroom,
-}: VideoMessageProps) {
+type VideoMessageProps = AppMessageProps<VideoMessageEntity>;
+
+export default function VideoMessage({ message, ...props }: VideoMessageProps) {
   return (
-    <div>
-      <p>视频: {message.msg.appmsg.des})</p>
-      <p> from: {message.msg.appinfo.appname}</p>
+    <div {...props}>
+      <p>视频: {message.message_entity.msg.appmsg.des})</p>
+      <p> from: {message.message_entity.msg.appinfo.appname}</p>
     </div>
   );
 }

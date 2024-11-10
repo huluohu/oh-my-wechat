@@ -1,10 +1,7 @@
-import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-type TransferMessageEntity = AppMessageEntity<{
+export interface TransferMessageEntity {
   type: AppMessageType.TRANSFER;
   title: string;
   des: string;
@@ -71,24 +68,21 @@ type TransferMessageEntity = AppMessageEntity<{
       launcherusername: string;
     };
   };
-}>;
-
-interface TransferMessageProps extends Omit<AppMessageProps, "message"> {
-  message: TransferMessageEntity;
 }
+
+type TransferMessageProps = AppMessageProps<TransferMessageEntity>;
 
 export default function TransferMessage({
   message,
-  variant = "default",
-  direction,
-  isChatroom,
+  ...props
 }: TransferMessageProps) {
   return (
-    <div>
+    <div {...props}>
       <p>
-        {message.msg.appmsg.wcpayinfo.paysubtype === 3 && "收"}
-        {message.msg.appmsg.wcpayinfo.paysubtype === 8 && "发"}
-        {message.msg.appmsg.title}: {message.msg.appmsg.des}
+        {message.message_entity.msg.appmsg.wcpayinfo.paysubtype === 3 && "收"}
+        {message.message_entity.msg.appmsg.wcpayinfo.paysubtype === 8 && "发"}
+        {message.message_entity.msg.appmsg.title}:{" "}
+        {message.message_entity.msg.appmsg.des}
       </p>
     </div>
   );

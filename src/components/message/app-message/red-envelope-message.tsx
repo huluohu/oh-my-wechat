@@ -1,10 +1,7 @@
-import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-type RedEnvelopeEntity = AppMessageEntity<{
+export interface RedEnvelopeMessageEntity {
   type: AppMessageType.RED_ENVELOPE;
   title: string;
   des: string;
@@ -27,21 +24,14 @@ type RedEnvelopeEntity = AppMessageEntity<{
     invalidtime: number;
     broaden: "";
   };
-}>;
-
-interface RedEnvelopeProps extends Omit<AppMessageProps, "message"> {
-  message: RedEnvelopeEntity;
 }
 
-export default function RedEnvelope({
-  message,
-  variant = "default",
-  direction,
-  isChatroom,
-}: RedEnvelopeProps) {
+type RedEnvelopeProps = AppMessageProps<RedEnvelopeMessageEntity>;
+
+export default function RedEnvelope({ message, ...props }: RedEnvelopeProps) {
   return (
-    <div>
-      <p>{message.msg.appmsg.des}</p>
+    <div {...props}>
+      <p>{message.message_entity.msg.appmsg.des}</p>
     </div>
   );
 }

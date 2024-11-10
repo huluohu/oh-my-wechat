@@ -1,10 +1,7 @@
-import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-type PatMessageEntity = AppMessageEntity<{
+export interface PatMessageEntity {
   type: AppMessageType.PAT;
   title: string;
   patMsg: {
@@ -20,21 +17,14 @@ type PatMessageEntity = AppMessageEntity<{
     };
     chatUser: string;
   };
-}>;
-
-interface PatMessageProps extends Omit<AppMessageProps, "message"> {
-  message: PatMessageEntity;
 }
 
-export default function PatMessage({
-  message,
-  variant = "default",
-  direction,
-  isChatroom,
-}: PatMessageProps) {
+type PatMessageProps = AppMessageProps<PatMessageEntity>;
+
+export default function PatMessage({ message, ...props }: PatMessageProps) {
   return (
-    <div>
-      <p>{message.msg.appmsg.patMsg.records.record.templete}</p>
+    <div {...props}>
+      <p>{message.message_entity.msg.appmsg.patMsg.records.record.templete}</p>
     </div>
   );
 }

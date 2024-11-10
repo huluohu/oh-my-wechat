@@ -1,30 +1,23 @@
-import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-type AnnouncementMessageEntity = AppMessageEntity<{
+export interface AnnouncementMessageEntity {
   type: AppMessageType.ANNOUNCEMENT;
   url: string;
   announcement: string; // xml
   textannouncement: string;
   xmlpuretext: number;
-}>;
-
-interface AnnouncementMessageProps extends Omit<AppMessageProps, "message"> {
-  message: AnnouncementMessageEntity;
 }
+
+type AnnouncementMessageProps = AppMessageProps<AnnouncementMessageEntity>;
 
 export default function AnnouncementMessage({
   message,
-  variant = "default",
-  direction,
-  isChatroom,
+  ...props
 }: AnnouncementMessageProps) {
   return (
-    <div>
-      <p>公告：{message.msg.appmsg.textannouncement}</p>
+    <div {...props}>
+      <p>公告：{message.message_entity.msg.appmsg.textannouncement}</p>
     </div>
   );
 }

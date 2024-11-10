@@ -1,4 +1,4 @@
-import { DatabaseName } from "@/lib/schema.ts";
+import type { WCDatabaseNames, WCDatabases } from "@/lib/schema.ts";
 import { createContext, useContext, useEffect, useState } from "react";
 import initSqlJs, { type Database, type QueryExecResult } from "sql.js";
 import sqliteUrl from "../../../node_modules/sql.js/dist/sql-wasm.wasm?url";
@@ -6,8 +6,8 @@ import sqliteUrl from "../../../node_modules/sql.js/dist/sql-wasm.wasm?url";
 const DatabaseContext = createContext<{
   initialized: boolean;
   loadDirectory: (directoryHandle: FileSystemDirectoryHandle) => Promise<void>;
-  dictionary: FileSystemDirectoryHandle;
-  databases: { [key in DatabaseName]: Database | Database[] };
+  dictionary: FileSystemDirectoryHandle | undefined;
+  databases: WCDatabases;
 }>({
   initialized: false,
   loadDirectory: () => Promise.resolve(),
@@ -20,13 +20,9 @@ export const DatabaseProvider = ({
 }: { children: React.ReactNode }) => {
   const [initialized, setInitialized] = useState<boolean>(false);
   const [dictionary, setDictionary] = useState<FileSystemDirectoryHandle>();
-  const [databases, setDatabases] = useState<{
-    [key: string]: Database | Database[];
-  }>({});
+  const [databases, setDatabases] = useState<WCDatabases>({});
 
-  const databaseTemp: {
-    [key: string]: Database | Database[];
-  } = {};
+  const databaseTemp: WCDatabases = {};
 
   const loadDirectory = async (directoryHandle: FileSystemDirectoryHandle) => {
     setDictionary(directoryHandle);
@@ -43,7 +39,7 @@ export const DatabaseProvider = ({
       new Uint8Array(manifestDatabaseFileBuffer),
     );
 
-    databaseTemp[DatabaseName.manifest] = manifestDatabase;
+    databaseTemp.manifest = manifestDatabase;
 
     let rows: QueryExecResult[];
 
@@ -54,53 +50,12 @@ export const DatabaseProvider = ({
     console.log(rows);
 
     if (rows.length > 0) {
-      const fileID = rows[0].values[0][0];
-      const filePrefix = fileID.substring(0, 2);
-      const filePath = `${filePrefix}/${fileID}`;
-
-      console.log("session.db", filePath);
-
-      const subDirectoryHandle =
-        await directoryHandle.getDirectoryHandle(filePrefix);
-
-      const databaseHandle = await subDirectoryHandle.getFileHandle(fileID);
-      const databaseFileBuffer = await (
-        await databaseHandle.getFile()
-      ).arrayBuffer();
-      databaseTemp[DatabaseName.session] = new SQL.Database(
-        new Uint8Array(databaseFileBuffer),
-      );
-    }
-
-    rows = manifestDatabase.exec(
-      `SELECT * FROM "Files" WHERE "domain" = "AppDomain-com.tencent.xin" AND "relativePath" LIKE "%WCDB_Contact.sqlite" AND "flags" = 1`,
-    );
-    if (rows.length > 0) {
-      const fileID = rows[0].values[0][0];
-      const filePrefix = fileID.substring(0, 2);
-      const filePath = `${filePrefix}/${fileID}`;
-
-      const subDirectoryHandle =
-        await directoryHandle.getDirectoryHandle(filePrefix);
-
-      const databaseHandle = await subDirectoryHandle.getFileHandle(fileID);
-      const databaseFileBuffer = await (
-        await databaseHandle.getFile()
-      ).arrayBuffer();
-      databaseTemp[DatabaseName.WCDB_Contact] = new SQL.Database(
-        new Uint8Array(databaseFileBuffer),
-      );
-    }
-
-    rows = manifestDatabase.exec(
-      `SELECT * FROM "Files" WHERE "domain" = "AppDomain-com.tencent.xin" AND "relativePath" LIKE "%message_%.sqlite" AND "flags" = 1 ORDER BY "relativePath" ASC`,
-    );
-
-    if (rows.length > 0) {
-      for (const row of rows[0].values) {
-        const fileID = row[0];
+      const fileID = rows[0].values[0][0] as string;
+      if (fileID) {
         const filePrefix = fileID.substring(0, 2);
         const filePath = `${filePrefix}/${fileID}`;
+
+        console.log("session.db", filePath);
 
         const subDirectoryHandle =
           await directoryHandle.getDirectoryHandle(filePrefix);
@@ -109,9 +64,66 @@ export const DatabaseProvider = ({
         const databaseFileBuffer = await (
           await databaseHandle.getFile()
         ).arrayBuffer();
-        databaseTemp[DatabaseName.message] ||
-          (databaseTemp[DatabaseName.message] = []);
-        databaseTemp[DatabaseName.message].push(
+        databaseTemp.session = new SQL.Database(
+          new Uint8Array(databaseFileBuffer),
+        );
+      } else {
+        throw new Error("session.db is not found");
+      }
+    }
+
+    rows = manifestDatabase.exec(
+      `SELECT * FROM "Files" WHERE "domain" = "AppDomain-com.tencent.xin" AND "relativePath" LIKE "%WCDB_Contact.sqlite" AND "flags" = 1`,
+    );
+
+    console.log(rows);
+
+    if (rows.length > 0) {
+      const fileID = rows[0].values[0][0] as string;
+      if (fileID) {
+        const filePrefix = fileID.substring(0, 2);
+        const filePath = `${filePrefix}/${fileID}`;
+
+        console.log("WCDB_Contact.sqlite", filePath);
+
+        const subDirectoryHandle =
+          await directoryHandle.getDirectoryHandle(filePrefix);
+
+        const databaseHandle = await subDirectoryHandle.getFileHandle(fileID);
+        const databaseFileBuffer = await (
+          await databaseHandle.getFile()
+        ).arrayBuffer();
+        databaseTemp.WCDB_Contact = new SQL.Database(
+          new Uint8Array(databaseFileBuffer),
+        );
+      } else {
+        throw new Error("WCDB_Contact.sqlite is not found");
+      }
+    }
+
+    rows = manifestDatabase.exec(
+      `SELECT * FROM "Files" WHERE "domain" = "AppDomain-com.tencent.xin" AND "relativePath" LIKE "%message_%.sqlite" AND "flags" = 1 ORDER BY "relativePath" ASC`,
+    );
+
+    if (rows.length > 0) {
+      for (const row of rows[0].values) {
+        const fileID = row[0] as string;
+        const filePrefix = fileID.substring(0, 2);
+        const filePath = `${filePrefix}/${fileID}`;
+
+        console.log("message_%.sqlite", filePath);
+
+        const subDirectoryHandle =
+          await directoryHandle.getDirectoryHandle(filePrefix);
+
+        const databaseHandle = await subDirectoryHandle.getFileHandle(fileID);
+        const databaseFileBuffer = await (
+          await databaseHandle.getFile()
+        ).arrayBuffer();
+
+        if (databaseTemp.message === undefined) databaseTemp.message = [];
+
+        databaseTemp.message.push(
           new SQL.Database(new Uint8Array(databaseFileBuffer)),
         );
       }
@@ -124,12 +136,14 @@ export const DatabaseProvider = ({
   useEffect(() => {
     return () => {
       for (const databaseName in databases) {
-        if (Array.isArray(databaseTemp[databaseName])) {
-          for (const db of databaseTemp[databaseName]) {
+        if (Array.isArray(databases[databaseName as WCDatabaseNames])) {
+          for (const db of databases[
+            databaseName as WCDatabaseNames
+          ] as Database[]) {
             db.close();
           }
         } else {
-          databaseTemp[databaseName].close();
+          (databases[databaseName as WCDatabaseNames] as Database).close();
         }
       }
     };

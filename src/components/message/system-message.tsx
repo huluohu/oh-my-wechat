@@ -1,12 +1,18 @@
 import type { MessageProp } from "@/components/message/message.tsx";
+import type { SystemMessage as SystemMessageVM } from "@/lib/schema.ts";
 
-interface SystemMessageProp extends MessageProp {}
+type SystemMessageProp = MessageProp<SystemMessageVM>;
 
-export default function SystemMessage({ message }: SystemMessageProp) {
+export type SystemMessageEntity = string;
+
+export default function SystemMessage({
+  message,
+  ...props
+}: SystemMessageProp) {
   return (
-    <div className="text-sm text-center text-pretty">
-      <span className="px-2 py-0.5 box-decoration-clone rounded-full bg-neutral-300">
-        {message.Message}
+    <div className="text-sm text-center text-pretty" {...props}>
+      <span className="px-2 py-1 box-decoration-clone">
+        {message.message_entity}
       </span>
     </div>
   );

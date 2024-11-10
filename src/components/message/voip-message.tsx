@@ -1,11 +1,11 @@
 import type { MessageProp } from "@/components/message/message.tsx";
-import { XMLParser } from "fast-xml-parser";
+import type { VoipMessage as VoipMessageVM } from "@/lib/schema.ts";
 
-interface ViopMessageProps extends MessageProp {
+interface VoipMessageProps extends MessageProp<VoipMessageVM> {
   variant: "default" | "referenced";
 }
 
-interface ViopMessageEntity {
+export interface VoipMessageEntity {
   voipmsg?: {
     "@_type": "VoIPBubbleMsg" | string; // eg. VoIPBubbleMsg
     VoIPBubbleMsg: {
@@ -34,29 +34,21 @@ interface ViopMessageEntity {
   };
 }
 
-export default function ViopMessage({
-  message,
-  variant = "default",
-  direction,
-  isChatroom,
-}: ViopMessageProps) {
-  const xmlParser = new XMLParser({
-    ignoreAttributes: false,
-  });
-  const messageEntity: ViopMessageEntity = xmlParser.parse(message.Message);
-
+export default function VoipMessage({ message, ...props }: VoipMessageProps) {
   return (
     <>
-      {messageEntity.voipmsg && (
-        <div className="">
+      {message.message_entity.voipmsg && (
+        <div className="" {...props}>
           call:{" "}
-          {messageEntity.voipmsg["@_type"] === "VoIPBubbleMsg" &&
-            messageEntity.voipmsg[messageEntity.voipmsg["@_type"]].msg}
+          {message.message_entity.voipmsg["@_type"] === "VoIPBubbleMsg" &&
+            message.message_entity.voipmsg[
+              message.message_entity.voipmsg["@_type"]
+            ].msg}
         </div>
       )}
 
-      {messageEntity.voipinvitemsg && (
-        <div className="">
+      {message.message_entity.voipinvitemsg && (
+        <div className="" {...props}>
           <p>通话邀请</p>
         </div>
       )}

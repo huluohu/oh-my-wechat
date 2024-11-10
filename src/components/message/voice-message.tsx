@@ -1,11 +1,11 @@
 import type { MessageProp } from "@/components/message/message.tsx";
-import { XMLParser } from "fast-xml-parser";
+import type { VoiceMessage as VoiceMessageVM } from "@/lib/schema.ts";
 
-interface VoiceMessageProps extends MessageProp {
+interface VoiceMessageProps extends MessageProp<VoiceMessageVM> {
   variant: "default" | "referenced";
 }
 
-interface VoiceMessageEntity {
+export interface VoiceMessageEntity {
   msg: {
     voicemsg: {
       "@_endflag": "0" | "1";
@@ -24,17 +24,10 @@ interface VoiceMessageEntity {
   };
 }
 
-export default function VoiceMessage({
-  message,
-  variant = "default",
-  direction,
-  isChatroom,
-}: VoiceMessageProps) {
-  const xmlParser = new XMLParser({
-    ignoreAttributes: false,
-  });
-  const messageEntity: VoiceMessageEntity = xmlParser.parse(message.Message);
+export default function VoiceMessage({ message, ...props }: VoiceMessageProps) {
   return (
-    <div className="">voice: {messageEntity.msg.voicemsg["@_voicelength"]}</div>
+    <div className="" {...props}>
+      voice: {message.message_entity.msg.voicemsg["@_voicelength"]}
+    </div>
   );
 }

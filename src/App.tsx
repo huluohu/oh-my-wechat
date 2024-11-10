@@ -1,7 +1,14 @@
-import ContactList from "@/components/contact-list.tsx";
+import ChatList from "@/components/chat-list.tsx";
 import MessageList from "@/components/message-list.tsx";
-import SessionList from "@/components/session-list.tsx";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -16,29 +23,75 @@ import {
 import { useApp } from "@/lib/hooks/appProvider.tsx";
 import { useDatabase } from "@/lib/hooks/databaseProvider";
 import { useState } from "react";
+import ContactList from "./components/contact-list";
+import { cn } from "./lib/utils";
 
 const App = () => {
   const { initialized, loadDirectory, databases } = useDatabase();
 
-  const { session, setSession } = useApp();
+  const { chat, setChat } = useApp();
 
   const [wxid, setWxid] = useState<string | null>(null);
   const [isChatroom, setIsChatroom] = useState<boolean>(false);
 
   return (
     <>
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="min-h-screen max-h-screen items-stretch"
+      >
+        <ResizablePanel defaultSize={25} minSize={10} className="flex">
+          <Tabs defaultValue="sessions" className="w-full flex">
+            <div className={"flex flex-col justify-between border-r"}>
+              <TabsList className="h-auto p-0 flex flex-col bg-transparent">
+                <TabsTrigger
+                  value="sessions"
+                  className={cn(
+                    "w-16 h-[4.5rem] flex flex-col",
+                    "data-[state=active]:shadow-none",
+                  )}
+                >
+                  <div className="mt-1 w-8 h-8 rounded-full bg-neutral-400" />
+                  <span className="mt-1 text-xs">消息</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="contact"
+                  className={cn(
+                    "w-16 h-[4.5rem] flex flex-col",
+                    "data-[state=active]:shadow-none",
+                  )}
+                >
+                  <div className="mt-1 w-8 h-8 rounded-full bg-neutral-400" />
+                  <span className="mt-1 text-xs">通讯录</span>
+                </TabsTrigger>
+              </TabsList>
 
+              <div className="w-16 h-16 flex justify-center items-center">
+                <Button
+                  asChild
+                  variant="link"
+                  size="icon"
+                  onClick={async () => {
+                    const directoryHandle = await window.showDirectoryPicker();
+                    if (
+                      (await directoryHandle.requestPermission()) === "granted"
+                    ) {
+                      loadDirectory(directoryHandle);
+                    }
+                  }}
+                >
+                  <div className="w-8 h-8 rounded-full bg-neutral-400" />
+                </Button>
+              </div>
+            </div>
 
-      <ResizablePanelGroup direction="horizontal" className="min-h-screen max-h-screen">
-        <ResizablePanel defaultSize={30}>
-          <Tabs defaultValue="sessions" className="h-full flex flex-col">
-            <TabsContent value="sessions" className="grow overflow-auto">
+            <TabsContent value="sessions" className="grow overflow-auto m-0">
               <div>
                 {initialized && (
-                  <SessionList
-                    onClickUser={(wxid) => {
-                      setSession(wxid);
-                      setWxid(wxid);
+                  <ChatList
+                    onClick={(chat) => {
+                      setChat(chat);
+                      // setWxid(wxid);
                     }}
                   />
                 )}
@@ -48,47 +101,35 @@ const App = () => {
               <div>
                 {initialized && (
                   <ContactList
-                    onClickUser={(wxid) => {
-                      if (wxid.endsWith("@chatroom")) {
-                        setIsChatroom(true);
-                      } else {
-                        setIsChatroom(false);
-                      }
-                      setSession(wxid);
-                      setWxid(wxid);
+                    onClick={() => {
+                      // setChat()
                     }}
                   />
                 )}
               </div>
             </TabsContent>
-
-            <div className={"p-2.5 flex items-center gap-2.5"}>
-              <TabsList>
-                <TabsTrigger value="sessions">消息</TabsTrigger>
-                <TabsTrigger value="contact">通讯录</TabsTrigger>
-              </TabsList>
-
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  const directoryHandle = await window.showDirectoryPicker();
-                  if ((await directoryHandle.requestPermission()) === "granted") {
-                    loadDirectory(directoryHandle);
-                  }
-                }}
-              >
-                Open Backup Directory
-              </Button>
-            </div>
           </Tabs>
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel>
-          <div className={"h-full p-2.5 overflow-auto"}>
-            {wxid && <MessageList wxid={wxid} isChatroom={isChatroom} />}
-          </div>
+          {chat && (
+            <MessageList
+              chat={chat}
+              isChatroom={chat.type === "chatroom"}
+              className="w-full h-full"
+            />
+          )}
         </ResizablePanel>
       </ResizablePanelGroup>
+
+      <Dialog>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Chat Details</DialogTitle>
+            <DialogDescription>...</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

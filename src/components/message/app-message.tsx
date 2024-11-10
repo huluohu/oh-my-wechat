@@ -1,37 +1,76 @@
-import AnnouncementMessage from "@/components/message/app-message/announcement-message.tsx";
-import Attach2Message from "@/components/message/app-message/attach-2-message.tsx";
-import AttachMessage from "@/components/message/app-message/attach-message.tsx";
-import AudioMessage from "@/components/message/app-message/audio-message.tsx";
-import ChannelMessage from "@/components/message/app-message/channel-message.tsx";
-import ForwardMessage from "@/components/message/app-message/forward-message.tsx";
-import LiveMessage from "@/components/message/app-message/live-message.tsx";
-import MiniappMessage from "@/components/message/app-message/miniapp-message.tsx";
-import MiniappUnknownMessage from "@/components/message/app-message/miniapp-unknown-message.tsx";
-import PatMessage from "@/components/message/app-message/pat-message.tsx";
-import RedEnvelopeMessage from "@/components/message/app-message/red-envelope-message.tsx";
-import ReferMessage from "@/components/message/app-message/refer-message.tsx";
-import StickerMessage from "@/components/message/app-message/sticker-message.tsx";
-import TextMessage from "@/components/message/app-message/text-message.tsx";
-import TransferMessage from "@/components/message/app-message/transfer-message.tsx";
-import UrlMessage from "@/components/message/app-message/url-message.tsx";
-import VideoMessage from "@/components/message/app-message/video-message.tsx";
+import AnnouncementMessage, {
+  type AnnouncementMessageEntity,
+} from "@/components/message/app-message/announcement-message.tsx";
+import Attach2Message, {
+  type Attach2MessageEntity,
+} from "@/components/message/app-message/attach-2-message.tsx";
+import AttachMessage, {
+  type AttachMessageEntity,
+} from "@/components/message/app-message/attach-message.tsx";
+import AudioMessage, {
+  type AudioMessageEntity,
+} from "@/components/message/app-message/audio-message.tsx";
+import ChannelMessage, {
+  type ChannelMessageEntity,
+} from "@/components/message/app-message/channel-message.tsx";
+import ForwardMessage, {
+  type ForwardMessageEntity,
+} from "@/components/message/app-message/forward-message.tsx";
+import LiveMessage, {
+  type LiveMessageEntity,
+} from "@/components/message/app-message/live-message.tsx";
+import MiniappMessage, {
+  type MiniappMessageEntity,
+} from "@/components/message/app-message/miniapp-message.tsx";
+import MiniappUnknownMessage, {
+  type MiniappUnknownMessageEntity,
+} from "@/components/message/app-message/miniapp-unknown-message.tsx";
+import PatMessage, {
+  type PatMessageEntity,
+} from "@/components/message/app-message/pat-message.tsx";
+import RedEnvelopeMessage, {
+  type RedEnvelopeMessageEntity,
+} from "@/components/message/app-message/red-envelope-message.tsx";
+import ReferMessage, {
+  type ReferMessageEntity,
+} from "@/components/message/app-message/refer-message.tsx";
+import StickerMessage, {
+  type StickerMessageEntity,
+} from "@/components/message/app-message/sticker-message.tsx";
+import TextMessage, {
+  type AppTextMessageEntity,
+} from "@/components/message/app-message/text-message.tsx";
+import TransferMessage, {
+  type TransferMessageEntity,
+} from "@/components/message/app-message/transfer-message.tsx";
+import UrlMessage, {
+  type UrlMessageEntity,
+} from "@/components/message/app-message/url-message.tsx";
+import VideoMessage, {
+  type VideoMessageEntity,
+} from "@/components/message/app-message/video-message.tsx";
 import type { MessageProp } from "@/components/message/message.tsx";
-import { AppMessageType, type DatabaseMessageRow } from "@/lib/schema.ts";
-import { XMLParser } from "fast-xml-parser";
+import {
+  AppMessageType,
+  type AppMessage as AppMessageVM,
+} from "@/lib/schema.ts";
 
-export interface AppMessageProps extends Omit<MessageProp, "message"> {
-  message: DatabaseMessageRow;
+export interface AppMessageProps<
+  T = {
+    type: 0;
+  },
+> extends MessageProp<AppMessageVM<T>> {
   variant: "default" | "referenced";
 }
 
 export interface AppMessageEntity<
   T = {
-    type: AppMessageType;
+    type: 0;
   },
 > {
   msg: {
     appmsg: T;
-    appinfo: {
+    appinfo?: {
       appname: string;
     };
   };
@@ -39,190 +78,159 @@ export interface AppMessageEntity<
 
 export default function AppMessage({
   message,
-  variant = "default",
-  direction,
-  isChatroom,
-}: AppMessageProps) {
-  const xmlParser = new XMLParser({
-    ignoreAttributes: false,
-  });
-
-  const messageEntity: AppMessageEntity = xmlParser.parse(message.Message);
-
-  if (!messageEntity.msg?.appmsg) {
+  ...props
+}: AppMessageProps<{
+  type: unknown;
+  [key: string]: unknown;
+}>) {
+  if (!message.message_entity.msg?.appmsg) {
     // throw new Error("Invalid app message");
     console.error(message);
     return <div className="">无法解析：49</div>;
   }
 
-  switch (messageEntity.msg.appmsg.type) {
+  switch (message.message_entity.msg.appmsg.type) {
     case AppMessageType.TEXT:
       return (
         <TextMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<AppTextMessageEntity>}
+          {...props}
         />
       );
 
     case AppMessageType.AUDIO:
       return (
         <AudioMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<AudioMessageEntity>}
+          {...props}
         />
       );
     case AppMessageType.VIDEO:
       return (
         <VideoMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<VideoMessageEntity>}
+          {...props}
         />
       );
 
     case AppMessageType.ATTACH:
       return (
         <AttachMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<AttachMessageEntity>}
+          {...props}
         />
       );
     case AppMessageType.STICKER:
       return (
         <StickerMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<StickerMessageEntity>}
+          {...props}
         />
       );
 
     case AppMessageType.FORWARD_MESSAGE:
       return (
         <ForwardMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<ForwardMessageEntity>}
+          {...props}
         />
       );
 
     case AppMessageType.MINIAPP_UNKNOWN:
       return (
         <MiniappUnknownMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={
+            message as unknown as AppMessageVM<MiniappUnknownMessageEntity>
+          }
+          {...props}
         />
       );
 
     case AppMessageType.MINIAPP:
       return (
         <MiniappMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<MiniappMessageEntity>}
+          {...props}
         />
       );
 
     case AppMessageType.CHANNEL:
       return (
         <ChannelMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<ChannelMessageEntity>}
+          {...props}
         />
       );
 
     case AppMessageType.REFER:
       return (
         <ReferMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<ReferMessageEntity>}
+          {...props}
         />
       );
     case AppMessageType.PAT:
       return (
         <PatMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<PatMessageEntity>}
+          {...props}
         />
       );
 
     case AppMessageType.LIVE:
       return (
         <LiveMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<LiveMessageEntity>}
+          {...props}
         />
       );
 
     case AppMessageType.ATTACH_2:
       return (
         <Attach2Message
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<Attach2MessageEntity>}
+          {...props}
         />
       );
 
     case AppMessageType.ANNOUNCEMENT:
       return (
         <AnnouncementMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={
+            message as unknown as AppMessageVM<AnnouncementMessageEntity>
+          }
+          {...props}
         />
       );
 
     case AppMessageType.TRANSFER:
       return (
         <TransferMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<TransferMessageEntity>}
+          {...props}
         />
       );
     case AppMessageType.RED_ENVELOPE:
       return (
         <RedEnvelopeMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<RedEnvelopeMessageEntity>}
+          {...props}
         />
       );
 
     case AppMessageType.URL:
       return (
         <UrlMessage
-          message={messageEntity}
-          variant={variant}
-          direction={direction}
-          isChatroom={isChatroom}
+          message={message as unknown as AppMessageVM<UrlMessageEntity>}
+          {...props}
         />
       );
 
     default:
-      return <div className="">不支持：49/{messageEntity.msg.appmsg.type}</div>;
+      return (
+        <div className="">
+          不支持：49/{message.message_entity.msg.appmsg.type as number}
+        </div>
+      );
   }
 }

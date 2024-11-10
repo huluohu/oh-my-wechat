@@ -1,10 +1,11 @@
 import type { MessageProp } from "@/components/message/message.tsx";
-import { XMLParser } from "fast-xml-parser";
+import type { StickerMessage as StickerMessageVM } from "@/lib/schema.ts";
 
-interface StickerMessageProps extends MessageProp {
+interface StickerMessageProps extends MessageProp<StickerMessageVM> {
   variant: "default" | "referenced";
 }
-interface StickerMessageEntity {
+
+export interface StickerMessageEntity {
   msg: {
     emoji: {
       "@_fromusername": string;
@@ -53,15 +54,11 @@ interface StickerMessageEntity {
 
 export default function StickerMessage({
   message,
-  variant = "default",
-  direction,
-  isChatroom,
+  ...props
 }: StickerMessageProps) {
-  const xmlParser = new XMLParser({
-    ignoreAttributes: false,
-  });
-  const messageEntity: StickerMessageEntity = xmlParser.parse(message.Message);
   return (
-    <div className="">sticker(md5): {messageEntity.msg.emoji["@_md5"]}</div>
+    <div className="" {...props}>
+      sticker(md5): {message.message_entity.msg.emoji["@_md5"]}
+    </div>
   );
 }

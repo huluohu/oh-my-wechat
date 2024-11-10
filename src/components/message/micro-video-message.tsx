@@ -1,11 +1,11 @@
 import type { MessageProp } from "@/components/message/message.tsx";
-import { XMLParser } from "fast-xml-parser";
+import type { MicroVideoMessage as MicroVideoMessageVM } from "@/lib/schema.ts";
 
-interface MicroVideoMessageProps extends MessageProp {
+interface MicroVideoMessageProps extends MessageProp<MicroVideoMessageVM> {
   variant: "default" | "referenced";
 }
 
-interface MicroVideoMessageEntity {
+export interface MicroVideoMessageEntity {
   msg: {
     videomsg: {
       "@_clientmsgid": string;
@@ -32,17 +32,11 @@ interface MicroVideoMessageEntity {
 
 export default function MicroVideoMessage({
   message,
-  variant = "default",
-  direction,
-  isChatroom,
+  ...props
 }: MicroVideoMessageProps) {
-  const xmlParser = new XMLParser({
-    ignoreAttributes: false,
-  });
-
-  const messageEntity: MicroVideoMessageEntity = xmlParser.parse(
-    message.Message,
+  return (
+    <div className="" {...props}>
+      micro video: {message.local_id}
+    </div>
   );
-
-  return <div className="">micro video: {message.MesLocalID}</div>;
 }

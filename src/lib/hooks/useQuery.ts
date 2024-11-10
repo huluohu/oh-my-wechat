@@ -1,43 +1,48 @@
-import { Contact } from "@/lib/controllers/contact.ts";
-import { Image } from "@/lib/controllers/image.ts";
-import { Message } from "@/lib/controllers/message.ts";
-import { Session } from "@/lib/controllers/session.ts";
+import { ChatController } from "@/lib/controllers/chat";
+import { ContactController } from "@/lib/controllers/contact.ts";
+import { ImageController } from "@/lib/controllers/image.ts";
+import { MessageController } from "@/lib/controllers/message.ts";
 import { useDatabase } from "@/lib/hooks/databaseProvider.tsx";
-import { data } from "autoprefixer";
 import { useState } from "react";
+import { AttachController } from "../controllers/attach";
 
 enum Controller {
-  Sessions = "/sessions",
+  Chat = "/chats",
   Contacts = "/contacts",
   Messages = "/messages",
   Images = "/images",
+  Attach = "/attach",
 }
 
 const controller: {
-  [key: string]: any;
+  [key: string]: (...args: any[]) => Promise<any>;
 } = {
-  [Controller.Sessions]: Session.all,
-  [Controller.Contacts]: Contact.all,
-  [Controller.Messages]: Message.all,
-  [Controller.Images]: Image.get,
+  [Controller.Chat]: ChatController.all,
+  [Controller.Contacts]: ContactController.all,
+  [Controller.Messages]: MessageController.all,
+  [Controller.Images]: ImageController.get,
+  [Controller.Attach]: AttachController.get,
 };
 
-export default function useQuery<T>(initialState: T) {
+export default function useQuery<T>(
+  initialState: T,
+): [(endpoint: string, ...args: any[]) => void, boolean, T, unknown] {
   const { dictionary, databases } = useDatabase();
   const [isQuerying, setIsQuerying] = useState<boolean>(false);
   const [result, setResult] = useState<T>(initialState);
   const [error, setError] = useState(null);
 
-  const query = async (endpoint: string, ...args) => {
+  const query = async (endpoint: string, ...args: any[]) => {
     setIsQuerying(true);
     let result = null;
     switch (endpoint) {
-      case Controller.Sessions:
+      case Controller.Chat:
       case Controller.Contacts:
       case Controller.Messages:
         result = await controller[endpoint](databases, ...args);
         break;
       case Controller.Images:
+      case Controller.Attach:
         result = await controller[endpoint](dictionary, databases, ...args);
         break;
       default:

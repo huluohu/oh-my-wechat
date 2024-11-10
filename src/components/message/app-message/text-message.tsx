@@ -1,28 +1,18 @@
-import type {
-  AppMessageEntity,
-  AppMessageProps,
-} from "@/components/message/app-message.tsx";
+import type { AppMessageProps } from "@/components/message/app-message.tsx";
 import type { AppMessageType } from "@/lib/schema.ts";
 
-type TextMessageEntity = AppMessageEntity<{
+export interface AppTextMessageEntity {
   type: AppMessageType.TEXT;
   title: string;
   des: string; // eg. a link
-}>;
-
-interface TextMessageProps extends Omit<AppMessageProps, "message"> {
-  message: TextMessageEntity;
 }
 
-export default function TextMessage({
-  message,
-  variant = "default",
-  direction,
-  isChatroom,
-}: TextMessageProps) {
+type TextMessageProps = AppMessageProps<AppTextMessageEntity>;
+
+export default function TextMessage({ message, ...props }: TextMessageProps) {
   return (
-    <div>
-      <p>文本: {message.msg.appmsg.title})</p>
+    <div {...props}>
+      <p>文本: {message.message_entity.msg.appmsg.title})</p>
     </div>
   );
 }
