@@ -15,19 +15,21 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable.tsx";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs.tsx";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs.tsx";
 
+import AccountSelectDialog from "@/components/account-select-dialog.tsx";
+import Example from "@/components/example.tsx";
 import { useApp } from "@/lib/hooks/appProvider.tsx";
 import { useDatabase } from "@/lib/hooks/databaseProvider";
 import { useState } from "react";
@@ -35,46 +37,16 @@ import ContactList from "./components/contact-list";
 import { cn } from "./lib/utils";
 
 const App = () => {
-  const { initialized, loadDirectory, dictionary, databases } = useDatabase();
+  const { account } = useDatabase();
 
-  const { userList, setUserList, user, setUser, chat, setChat } = useApp();
+  const { user, setUser, chat, setChat } = useApp();
 
   const [wxid, setWxid] = useState<string | null>(null);
   const [isChatroom, setIsChatroom] = useState<boolean>(false);
 
   return (
     <>
-      <Dialog open={!dictionary && !user}>
-        <DialogContent>
-
-          <Button variant="outline" className="w-fit h-auto flex flex-col" onClick={async () => {
-            const directoryHandle = await window.showDirectoryPicker();
-            if (
-              (await directoryHandle.requestPermission()) === "granted"
-            ) {
-              loadDirectory(directoryHandle);
-            }
-          }}>
-            <div className="size-6 bg-neutral-400" />
-            打开备份文件夹
-          </Button>
-
-          <Select>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Theme" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button variant="outline">打开</Button>
-
-
-        </DialogContent>
-      </Dialog>
+      {!account && <AccountSelectDialog open={false} />}
 
       <ResizablePanelGroup
         direction="horizontal"
@@ -105,29 +77,11 @@ const App = () => {
                   <span className="mt-1 text-xs">通讯录</span>
                 </TabsTrigger>
               </TabsList>
-
-              <div className="w-16 h-16 flex justify-center items-center">
-                <Button
-                  asChild
-                  variant="link"
-                  size="icon"
-                  onClick={async () => {
-                    const directoryHandle = await window.showDirectoryPicker();
-                    if (
-                      (await directoryHandle.requestPermission()) === "granted"
-                    ) {
-                      loadDirectory(directoryHandle);
-                    }
-                  }}
-                >
-                  <div className="w-8 h-8 rounded-full bg-neutral-400" />
-                </Button>
-              </div>
             </div>
 
             <TabsContent value="sessions" className="grow overflow-auto m-0">
               <div>
-                {initialized && (
+                {account && (
                   <ChatList
                     onClick={(chat) => {
                       setChat(chat);
@@ -139,7 +93,7 @@ const App = () => {
             </TabsContent>
             <TabsContent value="contact" className="grow overflow-auto">
               <div>
-                {initialized && (
+                {account && (
                   <ContactList
                     onClick={() => {
                       // setChat()
@@ -152,12 +106,14 @@ const App = () => {
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel>
-          {chat && (
+          {chat ? (
             <MessageList
               chat={chat}
               isChatroom={chat.type === "chatroom"}
               className="w-full h-full"
             />
+          ) : (
+            <Example />
           )}
         </ResizablePanel>
       </ResizablePanelGroup>

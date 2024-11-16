@@ -5,7 +5,7 @@ import { getFileFromManifast as getFilesFromManifast } from "../utils";
 
 export const AttachController = {
   get: async (
-    dictionary: FileSystemDirectoryHandle,
+    directory: FileSystemDirectoryHandle,
     databases: WCDatabases,
     {
       sessionId,
@@ -27,7 +27,7 @@ export const AttachController = {
 
     const files = await getFilesFromManifast(
       db,
-      dictionary,
+      directory,
       `%/OpenData/${sessionIdMd5}/${messageLocalId}.%`,
     );
 

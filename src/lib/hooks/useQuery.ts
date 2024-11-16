@@ -27,7 +27,7 @@ const controller: {
 export default function useQuery<T>(
   initialState: T,
 ): [(endpoint: string, ...args: any[]) => void, boolean, T, unknown] {
-  const { dictionary, databases } = useDatabase();
+  const { directory, databases } = useDatabase();
   const [isQuerying, setIsQuerying] = useState<boolean>(false);
   const [result, setResult] = useState<T>(initialState);
   const [error, setError] = useState(null);
@@ -43,7 +43,7 @@ export default function useQuery<T>(
         break;
       case Controller.Images:
       case Controller.Attach:
-        result = await controller[endpoint](dictionary, databases, ...args);
+        result = await controller[endpoint](directory, databases, ...args);
         break;
       default:
         break;

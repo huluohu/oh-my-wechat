@@ -71,7 +71,7 @@ function MessageComponent({
           )}
         >
           {showPhoto && (
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+            <div className="shrink-0 w-11 h-11 bg-neutral-400 clothoid-corner-0.375" />
           )}
 
           <TextMessage
@@ -93,7 +93,7 @@ function MessageComponent({
           )}
         >
           {showPhoto && (
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+            <div className="shrink-0 w-11 h-11 bg-neutral-400 clothoid-corner-0.375" />
           )}
           <ImageMessage
             message={message}
@@ -114,7 +114,7 @@ function MessageComponent({
           )}
         >
           {showPhoto && (
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+            <div className="shrink-0 w-11 h-11 bg-neutral-400 clothoid-corner-0.375" />
           )}
           <VoiceMessage
             message={message}
@@ -135,7 +135,7 @@ function MessageComponent({
           )}
         >
           {showPhoto && (
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+            <div className="shrink-0 w-11 h-11 bg-neutral-400 clothoid-corner-0.375" />
           )}
           <ContactMessage
             message={message}
@@ -156,7 +156,7 @@ function MessageComponent({
           )}
         >
           {showPhoto && (
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+            <div className="shrink-0 w-11 h-11 bg-neutral-400 clothoid-corner-0.375" />
           )}
           <VideoMessage
             message={message}
@@ -177,7 +177,7 @@ function MessageComponent({
           )}
         >
           {showPhoto && (
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+            <div className="shrink-0 w-11 h-11 bg-neutral-400 clothoid-corner-0.375" />
           )}
           <MicroVideoMessage
             message={message}
@@ -198,7 +198,7 @@ function MessageComponent({
           )}
         >
           {showPhoto && (
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+            <div className="shrink-0 w-11 h-11 bg-neutral-400 clothoid-corner-0.375" />
           )}
           <StickerMessage
             message={message}
@@ -219,7 +219,7 @@ function MessageComponent({
           )}
         >
           {showPhoto && (
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+            <div className="shrink-0 w-11 h-11 bg-neutral-400 clothoid-corner-0.375" />
           )}
           <LocationMessage
             message={message}
@@ -241,7 +241,7 @@ function MessageComponent({
         >
           {showPhoto &&
             message.message_entity.msg.appmsg.type !== AppMessageType.PAT && (
-              <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+              <div className="shrink-0 w-11 h-11 bg-neutral-400 clothoid-corner-0.375" />
             )}
           <AppMessage
             message={message}
@@ -262,7 +262,7 @@ function MessageComponent({
           )}
         >
           {showPhoto && (
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+            <div className="shrink-0 w-11 h-11 bg-neutral-400 clothoid-corner-0.375" />
           )}
           <VoipMessage
             message={message}
@@ -283,7 +283,7 @@ function MessageComponent({
           )}
         >
           {showPhoto && (
-            <div className="shrink-0 w-10 h-10 bg-neutral-400 rounded-lg" />
+            <div className="shrink-0 w-11 h-11 bg-neutral-400 clothoid-corner-0.375" />
           )}
           <ChatroomVoipMessage
             message={message}

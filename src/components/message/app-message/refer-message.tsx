@@ -42,7 +42,7 @@ export default function ReferMessage({
           <TextMessage
             variant={"referenced"}
             message={message.reply_to_message}
-            direction={message.reply_to_message.direction}
+            direction={message.direction}
             showPhoto={true}
             showUsername={true}
           />

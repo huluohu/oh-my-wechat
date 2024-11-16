@@ -53,7 +53,7 @@ export default function ChannelMessage({
     <div className="relative w-48" {...props}>
       <img
         src={
-          message.message_entity.msg.appmsg.finderFeed.mediaList.media.coverUrl
+          message.message_entity.msg.appmsg.finderFeed.mediaList.media.thumbUrl
         }
         alt=""
         referrerPolicy="no-referrer"

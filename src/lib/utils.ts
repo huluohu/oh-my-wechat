@@ -19,7 +19,7 @@ type FileList = {
 
 export async function getFileFromManifast(
   manifestDatabase: Database,
-  dictionaryHandle: FileSystemDirectoryHandle,
+  directoryHandle: FileSystemDirectoryHandle,
   fileNamePattern: string,
 ): Promise<FileList> {
   const rows = manifestDatabase.exec(
@@ -34,7 +34,7 @@ export async function getFileFromManifast(
     const fileName = fileFullName.split("/").pop() as string;
     if (manifestFileName.length === 0) continue;
     const filePrefix = manifestFileName.substring(0, 2);
-    const file = await getDictionaryFile(dictionaryHandle, [
+    const file = await getDirectoryFile(directoryHandle, [
       filePrefix,
       manifestFileName,
     ]);
@@ -44,8 +44,8 @@ export async function getFileFromManifast(
   return fileList;
 }
 
-export async function getDictionaryFile(
-  dictionaryHandle: FileSystemDirectoryHandle,
+export async function getDirectoryFile(
+  directoryHandle: FileSystemDirectoryHandle,
   fileName: string | string[],
 ) {
   if (fileName.length === 0) return null;
@@ -56,14 +56,14 @@ export async function getDictionaryFile(
   const fileNameSegmentLength = fileNameSegment.length;
 
   if (fileNameSegmentLength === 1) {
-    const fileHandle = await dictionaryHandle.getFileHandle(fileNameSegment[0]);
+    const fileHandle = await directoryHandle.getFileHandle(fileNameSegment[0]);
     return await fileHandle.getFile();
   }
 
   if (fileNameSegmentLength > 1) {
-    const subDirectoryHandle = await dictionaryHandle.getDirectoryHandle(
+    const subDirectoryHandle = await directoryHandle.getDirectoryHandle(
       fileNameSegment[0],
     );
-    return getDictionaryFile(subDirectoryHandle, fileNameSegment.splice(1));
+    return getDirectoryFile(subDirectoryHandle, fileNameSegment.splice(1));
   }
 }

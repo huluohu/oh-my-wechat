@@ -1,3 +1,4 @@
+import Image from "@/components/image.tsx";
 import type { MessageProp } from "@/components/message/message.tsx";
 import type { StickerMessage as StickerMessageVM } from "@/lib/schema.ts";
 
@@ -58,7 +59,7 @@ export default function StickerMessage({
 }: StickerMessageProps) {
   return (
     <div className="" {...props}>
-      sticker(md5): {message.message_entity.msg.emoji["@_md5"]}
+      <Image src={message.message_entity.msg.emoji["@_cdnurl"]} />
     </div>
   );
 }

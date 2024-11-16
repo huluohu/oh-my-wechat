@@ -79,6 +79,11 @@ export interface Contact {
   remarkPinyinInits: string;
 }
 
+// TODO 微信账户
+export interface Account {
+  md5: string;
+}
+
 export interface User {
   id: string; // wxid
   user_id: string;
@@ -214,9 +219,11 @@ export type LocationMessage = BasicMessage<
   MessageType.LOCATION,
   LocationMessageEntity
 >;
-export type AppMessage<T = {
-  type: 0
-}> = BasicMessage<MessageType.APP, AppMessageEntity<T>>;
+export type AppMessage<
+  T = {
+    type: 0;
+  },
+> = BasicMessage<MessageType.APP, AppMessageEntity<T>>;
 export type VoipMessage = BasicMessage<MessageType.VOIP, VoipMessageEntity>;
 export type MicroVideoMessage = BasicMessage<
   MessageType.MICROVIDEO,

@@ -9,7 +9,7 @@ import { getFileFromManifast as getFilesFromManifast } from "../utils";
 
 export const ImageController = {
   get: async (
-    dictionary: FileSystemDirectoryHandle,
+    directory: FileSystemDirectoryHandle,
     databases: WCDatabases,
     {
       sessionId,
@@ -31,7 +31,7 @@ export const ImageController = {
 
     const files = await getFilesFromManifast(
       db,
-      dictionary,
+      directory,
       `%/Img/${sessionIdMd5}/${messageLocalId}.%`,
     );
 

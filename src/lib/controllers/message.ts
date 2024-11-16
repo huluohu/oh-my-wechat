@@ -21,7 +21,7 @@ import {
   type ControllerPaginatorResult,
   type ControllerResult,
   type DatabaseMessageRow,
-  Group,
+  type Group,
   type ImageMessage,
   type LocationMessage,
   type Message,
@@ -57,8 +57,8 @@ export const MessageController = {
     const messageSenderIds: string[] = raw_message_rows.map(
       (raw_message_row) => {
         if (chat.type === "chatroom") {
-          let senderId: string = "";
-          let rawMessageContent: string = "";
+          let senderId = "";
+          let rawMessageContent = "";
 
           if (
             raw_message_row.Des === MessageDirection.outgoing ||
@@ -89,7 +89,7 @@ export const MessageController = {
     });
 
     const messageIndexesHasReplyMessage: number[] = [];
-    const replyMessageIds = {};
+    const replyMessageIds: string[] = [];
 
     const messages = raw_message_rows.map((raw_message_row, index) => {
       const message = {
@@ -179,16 +179,16 @@ export const MessageController = {
         }
 
         case MessageType.APP: {
-          const messageEntity: AppMessageEntity<{ type: number }> = xmlParser.parse(
-            raw_message_row.Message,
-          );
+          const messageEntity: AppMessageEntity<{ type: number }> =
+            xmlParser.parse(raw_message_row.Message);
 
           if (messageEntity.msg.appmsg.type === AppMessageType.REFER) {
             messageIndexesHasReplyMessage.push(index);
 
-            const replyMessageId = (messageEntity as AppMessageEntity<ReferMessageEntity>)
-              .msg.appmsg.refermsg.svrid;
-            replyMessageIds[replyMessageId] = undefined;
+            const replyMessageId = (
+              messageEntity as AppMessageEntity<ReferMessageEntity>
+            ).msg.appmsg.refermsg.svrid;
+            replyMessageIds.push(replyMessageId);
           }
 
           return {
@@ -262,11 +262,11 @@ export const MessageController = {
     });
     let replyMessageArray: Message[] = [];
 
-    if (parseReplyMessage && Object.keys(replyMessageIds).length) {
+    if (parseReplyMessage && replyMessageIds.length) {
       replyMessageArray = (
         await MessageController.in(databases, {
           chat,
-          messageIds: Object.keys(replyMessageIds),
+          messageIds: replyMessageIds,
         })
       ).data;
 
@@ -275,10 +275,12 @@ export const MessageController = {
         replyMessageTable[message.id] = message;
       });
 
-      Object.keys(replyMessageIds).forEach((i) => {
+      messageIndexesHasReplyMessage.forEach((index) => {
         // @ts-ignore
-        messages[i].reply_to_message =
-          replyMessageIds[i];
+        messages[index].reply_to_message =
+          replyMessageTable[
+            messages[index].message_entity.msg.appmsg.refermsg.svrid
+          ];
       });
     }
 
@@ -404,6 +406,7 @@ export const MessageController = {
       }),
     ].filter((row) => row.length > 0)[0];
 
+    console.log(rows[0].values);
 
     const raw_message_rows: DatabaseMessageRow[] = [];
 

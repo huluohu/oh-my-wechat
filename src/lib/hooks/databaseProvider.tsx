@@ -1,31 +1,37 @@
-import type { WCDatabaseNames, WCDatabases } from "@/lib/schema.ts";
+import type { Account, WCDatabaseNames, WCDatabases } from "@/lib/schema.ts";
 import { createContext, useContext, useEffect, useState } from "react";
 import initSqlJs, { type Database, type QueryExecResult } from "sql.js";
 import sqliteUrl from "../../../node_modules/sql.js/dist/sql-wasm.wasm?url";
 
 const DatabaseContext = createContext<{
-  initialized: boolean;
   loadDirectory: (directoryHandle: FileSystemDirectoryHandle) => Promise<void>;
-  dictionary: FileSystemDirectoryHandle | undefined;
+  directory: FileSystemDirectoryHandle | undefined;
+  accountList: Account[];
+  loadDatabases: (account: Account) => Promise<void>;
+  account: Account | undefined;
   databases: WCDatabases;
 }>({
-  initialized: false,
   loadDirectory: () => Promise.resolve(),
-  dictionary: undefined,
+  directory: undefined,
+  accountList: [],
+  loadDatabases: () => Promise.resolve(),
+  account: undefined,
   databases: {},
 });
 
 export const DatabaseProvider = ({
   children,
 }: { children: React.ReactNode }) => {
-  const [initialized, setInitialized] = useState<boolean>(false);
-  const [dictionary, setDictionary] = useState<FileSystemDirectoryHandle>();
+  const [directory, setDirectory] = useState<FileSystemDirectoryHandle>();
   const [databases, setDatabases] = useState<WCDatabases>({});
+
+  const [accountList, setAccountList] = useState<Account[]>([]);
+  const [account, setAccount] = useState<Account>();
 
   const databaseTemp: WCDatabases = {};
 
   const loadDirectory = async (directoryHandle: FileSystemDirectoryHandle) => {
-    setDictionary(directoryHandle);
+    setDirectory(directoryHandle);
 
     const SQL = await initSqlJs({ locateFile: () => sqliteUrl });
 
@@ -43,8 +49,53 @@ export const DatabaseProvider = ({
 
     let rows: QueryExecResult[];
 
+    // TODO 列出微信所有账号，需要过滤查询结果
     rows = manifestDatabase.exec(
-      `SELECT * FROM "Files" WHERE "domain" = "AppDomain-com.tencent.xin" AND "relativePath" LIKE "%/session/session.db" AND "flags" = 1`,
+      "SELECT * FROM Files WHERE domain = 'AppDomain-com.tencent.xin' AND relativePath LIKE 'Documents/________________________________' AND flags = 2;",
+    );
+
+    console.log(rows);
+
+    if (rows.length > 0) {
+      const accounts: Account[] = [];
+
+      for (const row of rows[0].values) {
+        if ((row[2] as string) === "Documents/00000000000000000000000000000000")
+          continue;
+        if (/^Documents\/[a-f0-9]{32}$/.test(row[2] as string)) {
+          accounts.push({
+            md5: (row[2] as string).split("/").pop() as string,
+          });
+        }
+      }
+
+      setAccountList(accounts);
+    }
+  };
+
+  const loadDatabases = async (account: Account) => {
+    if (directory === undefined) {
+      console.error("directory is not loaded");
+      return;
+    }
+
+    const SQL = await initSqlJs({ locateFile: () => sqliteUrl });
+
+    const manifestDatabaseHandle = await directory.getFileHandle("Manifest.db");
+    const manifestDatabaseFileBuffer = await (
+      await manifestDatabaseHandle.getFile()
+    ).arrayBuffer();
+
+    const manifestDatabase = new SQL.Database(
+      new Uint8Array(manifestDatabaseFileBuffer),
+    );
+
+    databaseTemp.manifest = manifestDatabase;
+
+    let rows: QueryExecResult[];
+
+    rows = manifestDatabase.exec(
+      `SELECT * FROM "Files" WHERE "domain" = "AppDomain-com.tencent.xin" AND "relativePath" LIKE "Documents/${account.md5}/session/session.db" AND "flags" = 1`,
     );
 
     console.log(rows);
@@ -58,7 +109,7 @@ export const DatabaseProvider = ({
         console.log("session.db", filePath);
 
         const subDirectoryHandle =
-          await directoryHandle.getDirectoryHandle(filePrefix);
+          await directory.getDirectoryHandle(filePrefix);
 
         const databaseHandle = await subDirectoryHandle.getFileHandle(fileID);
         const databaseFileBuffer = await (
@@ -73,7 +124,7 @@ export const DatabaseProvider = ({
     }
 
     rows = manifestDatabase.exec(
-      `SELECT * FROM "Files" WHERE "domain" = "AppDomain-com.tencent.xin" AND "relativePath" LIKE "%WCDB_Contact.sqlite" AND "flags" = 1`,
+      `SELECT * FROM "Files" WHERE "domain" = "AppDomain-com.tencent.xin" AND "relativePath" LIKE "Documents/${account.md5}/DB/WCDB_Contact.sqlite" AND "flags" = 1`,
     );
 
     console.log(rows);
@@ -87,7 +138,7 @@ export const DatabaseProvider = ({
         console.log("WCDB_Contact.sqlite", filePath);
 
         const subDirectoryHandle =
-          await directoryHandle.getDirectoryHandle(filePrefix);
+          await directory.getDirectoryHandle(filePrefix);
 
         const databaseHandle = await subDirectoryHandle.getFileHandle(fileID);
         const databaseFileBuffer = await (
@@ -102,7 +153,7 @@ export const DatabaseProvider = ({
     }
 
     rows = manifestDatabase.exec(
-      `SELECT * FROM "Files" WHERE "domain" = "AppDomain-com.tencent.xin" AND "relativePath" LIKE "%message_%.sqlite" AND "flags" = 1 ORDER BY "relativePath" ASC`,
+      `SELECT * FROM "Files" WHERE "domain" = "AppDomain-com.tencent.xin" AND "relativePath" LIKE "Documents/${account.md5}/DB/message_%.sqlite" AND "flags" = 1 ORDER BY "relativePath" ASC`,
     );
 
     if (rows.length > 0) {
@@ -114,7 +165,7 @@ export const DatabaseProvider = ({
         console.log("message_%.sqlite", filePath);
 
         const subDirectoryHandle =
-          await directoryHandle.getDirectoryHandle(filePrefix);
+          await directory.getDirectoryHandle(filePrefix);
 
         const databaseHandle = await subDirectoryHandle.getFileHandle(fileID);
         const databaseFileBuffer = await (
@@ -130,7 +181,7 @@ export const DatabaseProvider = ({
     }
 
     setDatabases(databaseTemp);
-    setInitialized(true);
+    setAccount(account);
   };
 
   useEffect(() => {
@@ -151,7 +202,14 @@ export const DatabaseProvider = ({
 
   return (
     <DatabaseContext.Provider
-      value={{ initialized, loadDirectory, dictionary, databases }}
+      value={{
+        directory,
+        loadDirectory,
+        loadDatabases,
+        databases,
+        accountList,
+        account,
+      }}
     >
       {children}
     </DatabaseContext.Provider>

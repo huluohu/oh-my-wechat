@@ -1,10 +1,12 @@
-type ImageProps = React.HtmlHTMLAttributes<HTMLImageElement>;
-
-export default function Image({ src, alt, ...props }: ImageProps) {
-    return <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        referrerPolicy="no-referrer"
+export default function Image({ src, alt, className, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      className={className}
+      {...props}
     />
+  );
 }

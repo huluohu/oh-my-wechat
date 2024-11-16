@@ -5,6 +5,7 @@ import type {
   ImageMessage as ImageMessageVM,
   PhotpSize,
 } from "@/lib/schema.ts";
+import { cn } from "@/lib/utils.ts";
 import { useEffect } from "react";
 
 interface ImageMessageProps extends MessageProp<ImageMessageVM> {
@@ -57,7 +58,11 @@ export interface ImageMessageEntity {
   };
 }
 
-export default function ImageMessage({ message, ...props }: ImageMessageProps) {
+export default function ImageMessage({
+  message,
+  direction,
+  ...props
+}: ImageMessageProps) {
   const { chat } = useApp();
 
   const [query, isQuerying, result, error] = useQuery<PhotpSize[]>([]);
@@ -78,7 +83,10 @@ export default function ImageMessage({ message, ...props }: ImageMessageProps) {
           src={result[0].src}
           loading="lazy"
           alt={""}
-          className="max-h-[80vh]"
+          className={cn(
+            ["mask-bubble-tail-r", "mask-bubble-tail-l"][direction],
+            "max-h-[80vh]",
+          )}
         />
       ) : null}
     </div>

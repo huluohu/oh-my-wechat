@@ -73,7 +73,10 @@ export default function ContactMessage({
       {...props}
     >
       <img
-        src={message.message_entity.msg["@_bigheadimgurl"]}
+        src={
+          message.message_entity.msg["@_bigheadimgurl"] ??
+          message.message_entity.msg["@_brandIconUrl"]
+        }
         alt=""
         referrerPolicy="no-referrer"
         className={"shrink-0 w-16 h-16 rounded-lg"}
