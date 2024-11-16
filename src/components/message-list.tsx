@@ -81,8 +81,8 @@ export default function MessageList({
                     type={message.type}
                     message={message}
                     direction={message.direction}
-                    showPhoto
-                    showUsername
+                    showPhoto={true}
+                    showUsername={true}
                   />
                 ) : (
                   <Message
@@ -91,8 +91,8 @@ export default function MessageList({
                     type={message.type}
                     message={message}
                     direction={message.direction}
-                    showPhoto={true}
-                    showUsername={true}
+                    showPhoto={false}
+                    showUsername={false}
                   />
                 ),
               )}

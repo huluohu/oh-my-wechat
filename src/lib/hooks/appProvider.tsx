@@ -1,7 +1,9 @@
-import type { Chat } from "@/lib/schema.ts";
+import type { Chat, User } from "@/lib/schema.ts";
 import { createContext, useContext, useState } from "react";
 
 interface AppProviderContext {
+  user: User | undefined;
+  setUser: (user: User) => void;
   chat: Chat | undefined;
   setChat: (chat: Chat) => void;
 
@@ -9,8 +11,10 @@ interface AppProviderContext {
 }
 
 const AppContext = createContext<AppProviderContext>({
+  user: undefined,
+  setUser: () => { },
   chat: undefined,
-  setChat: () => {},
+  setChat: () => { },
 
   enableDebug: false,
 });
@@ -22,10 +26,12 @@ interface AppProviderProps {
 }
 
 export const AppProvider = ({ children, ...props }: AppProviderProps) => {
+  const [userList, setUserList] = useState<User[]>()
+  const [user, setUser] = useState<User>()
   const [chat, setChat] = useState<Chat>();
 
   return (
-    <AppContext.Provider value={{ ...props, chat: chat, setChat: setChat }}>
+    <AppContext.Provider value={{ ...props, user, setUser, chat, setChat }}>
       {children}
     </AppContext.Provider>
   );

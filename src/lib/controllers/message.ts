@@ -89,7 +89,7 @@ export const MessageController = {
     });
 
     const messageIndexesHasReplyMessage: number[] = [];
-    const replyMessageIds: string[] = [];
+    const replyMessageIds = {};
 
     const messages = raw_message_rows.map((raw_message_row, index) => {
       const message = {
@@ -188,7 +188,7 @@ export const MessageController = {
 
             const replyMessageId = (messageEntity as AppMessageEntity<ReferMessageEntity>)
               .msg.appmsg.refermsg.svrid;
-            replyMessageIds.push(replyMessageId);
+            replyMessageIds[replyMessageId] = undefined;
           }
 
           return {
@@ -262,11 +262,11 @@ export const MessageController = {
     });
     let replyMessageArray: Message[] = [];
 
-    if (parseReplyMessage && replyMessageIds.length) {
+    if (parseReplyMessage && Object.keys(replyMessageIds).length) {
       replyMessageArray = (
         await MessageController.in(databases, {
           chat,
-          messageIds: replyMessageIds,
+          messageIds: Object.keys(replyMessageIds),
         })
       ).data;
 
@@ -275,10 +275,10 @@ export const MessageController = {
         replyMessageTable[message.id] = message;
       });
 
-      messageIndexesHasReplyMessage.forEach((index) => {
+      Object.keys(replyMessageIds).forEach((i) => {
         // @ts-ignore
-        messages[index].reply_to_message =
-          replyMessageTable[replyMessageIds[index]];
+        messages[i].reply_to_message =
+          replyMessageIds[i];
       });
     }
 

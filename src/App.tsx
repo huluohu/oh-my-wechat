@@ -20,6 +20,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs.tsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
 import { useApp } from "@/lib/hooks/appProvider.tsx";
 import { useDatabase } from "@/lib/hooks/databaseProvider";
 import { useState } from "react";
@@ -27,15 +35,47 @@ import ContactList from "./components/contact-list";
 import { cn } from "./lib/utils";
 
 const App = () => {
-  const { initialized, loadDirectory, databases } = useDatabase();
+  const { initialized, loadDirectory, dictionary, databases } = useDatabase();
 
-  const { chat, setChat } = useApp();
+  const { userList, setUserList, user, setUser, chat, setChat } = useApp();
 
   const [wxid, setWxid] = useState<string | null>(null);
   const [isChatroom, setIsChatroom] = useState<boolean>(false);
 
   return (
     <>
+      <Dialog open={!dictionary && !user}>
+        <DialogContent>
+
+          <Button variant="outline" className="w-fit h-auto flex flex-col" onClick={async () => {
+            const directoryHandle = await window.showDirectoryPicker();
+            if (
+              (await directoryHandle.requestPermission()) === "granted"
+            ) {
+              loadDirectory(directoryHandle);
+            }
+          }}>
+            <div className="size-6 bg-neutral-400" />
+            打开备份文件夹
+          </Button>
+
+          <Select>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Theme" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button variant="outline">打开</Button>
+
+
+        </DialogContent>
+      </Dialog>
+
       <ResizablePanelGroup
         direction="horizontal"
         className="min-h-screen max-h-screen items-stretch"

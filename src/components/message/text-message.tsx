@@ -735,8 +735,8 @@ export default function TextMessage({
         {...props}
       >
         {showUsername && message.from && (
-          <div className={"mt-[-0.25em] text-sm"}>
-            <small className={"text-neutral-400"}>
+          <div className={"mb-[0.25em] text-sm text-neutral-400"}>
+            <small className={"[font-size:inherit]"}>
               {message.from.remark ?? message.from.username}
             </small>
           </div>
@@ -760,15 +760,16 @@ export default function TextMessage({
         }
       >
         <p>
-          {message.from.photo?.thumb && (
+          {message.from?.photo?.thumb && (
             <img
-              src={message.from.photo?.thumb}
+              src={message.from.photo.thumb}
               alt=""
               referrerPolicy="no-referrer"
               className={"inline-block align-sub mr-0.5 w-4 h-4 rounded-sm"}
             />
           )}
-          {message.from.remark ?? message.from.username}:
+          {/* TODO */}
+          {message.from?.remark ?? message.from?.username ?? "USER"}:
           {message.message_entity as string}
         </p>
       </div>

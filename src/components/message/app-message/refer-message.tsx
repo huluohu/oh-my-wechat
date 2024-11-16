@@ -43,8 +43,8 @@ export default function ReferMessage({
             variant={"referenced"}
             message={message.reply_to_message}
             direction={message.reply_to_message.direction}
-            showPhoto
-            showUsername
+            showPhoto={true}
+            showUsername={true}
           />
         ) : (
           <small className={"bg-neutral-400"}>回复消息</small>
